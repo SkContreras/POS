@@ -1,0 +1,18 @@
+.modal {
+  display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.3); justify-content: center; align-items: center;
+}
+.modal-content {
+  background: #fff; padding: 24px 32px; border-radius: 12px; text-align: center; min-width: 280px;
+  box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+}
+.close {
+  position: absolute; right: 24px; top: 16px; font-size: 1.5rem; cursor: pointer;
+}
+#cantidadInput {
+  width: 80px; font-size: 1.2rem; margin: 16px 0;
+}
+#confirmCantidadBtn {
+  background: #3498db; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-size: 1rem; cursor: pointer;
+}
+#confirmCantidadBtn:hover { background: #217dbb; }
