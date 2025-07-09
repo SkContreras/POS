@@ -29,16 +29,12 @@ body {
 
 /* Formularios básicos */
 form.form, form {
-    background: linear-gradient(135deg, var(--blanco) 60%, var(--verde-hielo) 100%);
-    padding: 38px 34px 32px 34px;
     border-radius: 22px;
     box-shadow: 0 8px 32px 0 rgba(30,93,136,0.13), 0 1.5px 8px 0 var(--verde-agua);
     max-width: 440px;
-    margin: 32px auto 36px auto;
     width: 100%;
     animation: formFadeIn 1.1s cubic-bezier(.77,0,.18,1) both;
     border: 2.5px solid var(--verde-agua);
-    position: relative;
     overflow: hidden;
 }
 

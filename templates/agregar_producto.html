@@ -1,18 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Producto</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
 {% extends "base.html" %}
 
 {% block title %}Agregar Producto{% endblock %}
 
 {% block content %}
-    <h2 class="title">Agregar Producto</h2>
     <form method="post" enctype="multipart/form-data" class="form">
+        <h2 class="title" style="text-align:center; margin-bottom: 24px;">Agregar Producto</h2>
         <div class="form-group">
             <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" class="form-control" required>
@@ -32,6 +24,22 @@
     </form>
 {% endblock %}
 
+
+{% block sidebar %}
+<div class="sidebar left" id="gestionSidebar">
+    <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
+    <h3>Gestión</h3>
+    <nav>
+        <a href="{{ url_for('index') }}">💰 Vender</a>
+        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
+        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
+        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+        <a href="{{ url_for('historial') }}">📋 Historial</a>
+    </nav>
+</div>
+<button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>
+{% endblock %}
+
 {% block scripts %}
 <script>
     function loadFile(event) {
@@ -48,18 +56,3 @@
     }
 </script>
 {% endblock %}
-</body>
-<!-- Barra lateral izquierda de navegación -->
-<div class="sidebar left" id="gestionSidebar">
-    <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
-    <h3>Gestión</h3>
-    <nav>
-        <a href="{{ url_for('index') }}">💰 Vender</a>
-        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
-        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-        <a href="{{ url_for('historial') }}">📋 Historial</a>
-    </nav>
-</div>
-<button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>
-</html>

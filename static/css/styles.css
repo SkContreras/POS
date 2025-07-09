@@ -237,14 +237,12 @@ body.left-collapsed #tituloMegaMas {
 .search-bar {
     position: fixed;
     top: 0; /* Asegura que esté pegada arriba */
-    right: 280px;
+    right: 249px;
     height: 60px;
     display: flex;
     align-items: center;
     padding: 0 28px;
-    box-shadow: 0 4px 18px rgba(44,62,80,0.10);
     gap: 16px;
-    border-radius: 16px;
     border: 1.5px solid var(--verde-agua);
     transition: right 0.3s, width 0.3s, background 0.3s;
     z-index: 1001; /* Más alto que .decor-bar y #tituloMegaMas */
@@ -283,7 +281,7 @@ body.left-collapsed #tituloMegaMas {
 /* Si la barra derecha está oculta, la barra de búsqueda se pega al borde derecho */
 body.sidebar-closed .search-bar,
 body.both-collapsed .search-bar {
-    right: 16px;
+    right: 1px;
     width: calc(100vw - 32px);
 }
 
@@ -312,3 +310,30 @@ body.left-collapsed.sidebar-closed .container {
     margin-right: 0;
 }
 
+.producto {
+    transition: all 0.3s ease-in-out;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.producto.oculto {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.producto:not(.oculto) {
+    animation: aparecer 0.3s ease-out;
+}
+
+@keyframes aparecer {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

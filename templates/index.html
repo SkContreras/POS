@@ -67,12 +67,6 @@
     <!-- Título fijo de la aplicación -->
     <div id="tituloMegaMas">Mega-Mas</div>
 
-    <!-- Barra de búsqueda alineada con el título -->
-    <form class="search-bar">
-      <span class="search-icon">&#128269;</span>
-      <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar">
-    </form>
-
     <!-- Modal para elegir cantidad -->
     <div id="cantidadModal" class="modal">
       <div class="modal-content">
@@ -183,13 +177,24 @@
         });
 
         // Filtra productos en tiempo real según la búsqueda
-        document.getElementById('busqueda').addEventListener('input', function() {
-            const filtro = this.value.toLowerCase();
-            document.querySelectorAll('#menuProductos .producto').forEach(function(prod) {
-                const nombre = prod.querySelector('.nombre-producto').textContent.toLowerCase();
-                prod.style.display = nombre.includes(filtro) ? '' : 'none';
+        document.addEventListener("DOMContentLoaded", function () {
+            const input = document.getElementById("busqueda");
+            const productos = document.querySelectorAll(".producto");
+
+            input.addEventListener("keyup", function () {
+                const filtro = input.value.toLowerCase();
+
+                productos.forEach(function (producto) {
+                    const nombre = producto.dataset.nombre.toLowerCase();
+                    if (nombre.includes(filtro)) {
+                        producto.classList.remove("oculto");
+                    } else {
+                        producto.classList.add("oculto");
+                    }
+                });
             });
         });
+
 
         // Animación de rebote al hacer clic en un producto
         document.querySelectorAll('.producto').forEach(producto => {

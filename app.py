@@ -3,6 +3,7 @@ import sqlite3
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import uuid
 
 app = Flask(__name__)
 app.secret_key = '14/Oct/14'
@@ -54,9 +55,14 @@ def agregar_producto():
         nombre = request.form['nombre']
         precio = request.form['precio']
         file = request.files.get('fileInput')
-        if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+        if file and file.filename:
+            # Aseguramos nombre único y seguro
+            filename_original = secure_filename(file.filename)
+            extension = os.path.splitext(filename_original)[1]
+            filename = f"prod_{uuid.uuid4().hex}{extension}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
         else:
             filename = 'default.png'
         # Guardar producto en la base de datos con filename como imagen
@@ -90,11 +96,15 @@ def editar_producto():
         row = cursor.fetchone()
         imagen_url = row[0] if row else "default.png"
 
-        if file and file.filename != "":
-            filename = f"prod_{producto_id}_" + file.filename
+        if file and file.filename:
+            filename_original = file.filename
+            filename_original = secure_filename(filename_original)
+            extension = os.path.splitext(filename_original)[1]
+            filename = f"prod_{producto_id}_{uuid.uuid4().hex}{extension}"
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            imagen_url = filename  # corregido aquí
+            imagen_url = filename
+
 
         cursor.execute("""
             UPDATE productos
