@@ -61,9 +61,28 @@ function actualizarCarrito() {
     document.getElementById("total").textContent = total.toFixed(2);
 }
 
+function mostrarToast(mensaje, tipo = "success") {
+    const toast = document.getElementById("toast");
+
+    // Limpiar clases anteriores
+    toast.className = "";
+    toast.classList.add("show", tipo);
+    toast.textContent = mensaje;
+
+    // Ocultar después de unos segundos
+    setTimeout(() => {
+        toast.classList.remove("show", tipo);
+    }, 3500);
+}
+
+
 function finalizarVenta() {
     const total = parseFloat(document.getElementById("total").textContent);
-    if (total === 0) return alert("Carrito vacío.");
+    if (total === 0) {
+        mostrarToast("🛒 El carrito está vacío.", "warning");
+        return;
+    }
+
     fetch("/finalizar_venta", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,12 +91,19 @@ function finalizarVenta() {
     .then(res => res.json())
     .then(data => {
         if (data.status === "ok") {
-            alert("Venta guardada.");
+            mostrarToast("¡Venta guardada con éxito! 🎉", "success");
             carrito = [];
             actualizarCarrito();
+        } else {
+            mostrarToast("❌ Hubo un error al guardar.", "error");
         }
+    })
+    .catch(() => {
+        mostrarToast("⚠️ Error en la conexión.", "error");
     });
 }
+
+
 
 function toggleGestion() {
     const gestion = document.getElementById('gestionSidebar');

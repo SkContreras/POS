@@ -1,9 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, send_file
 import sqlite3
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import uuid
+import qrcode
+import socket
+import io
+import webbrowser
+import time
+import threading
 
 app = Flask(__name__)
 app.secret_key = '14/Oct/14'
@@ -48,6 +54,40 @@ def index():
     productos = c.fetchall()
     conn.close()
     return render_template("index.html", productos=productos)
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    def shutdown_server():
+        time.sleep(1)
+        os._exit(0)  # termina el proceso inmediatamente
+
+    threading.Thread(target=shutdown_server).start()
+    return 'Servidor apagado'
+
+def abrir_navegador_con_retraso():
+    time.sleep(1)  # Espera 1 segundo para que el servidor esté listo
+    abrir_navegador()
+
+def abrir_navegador():
+    hostname = socket.gethostname()
+    ip_local = socket.gethostbyname(hostname)
+    port = 5000
+    webbrowser.open(f"http://{ip_local}:{port}/", new=2)
+
+@app.route('/qr_code')
+def qr_code():
+    # Obtener IP local automáticamente
+    hostname = socket.gethostname()
+    ip_local = socket.gethostbyname(hostname)
+    port = 5000
+    url = f"http://{ip_local}:{port}"
+
+    # Crear QR
+    qr = qrcode.make(url)
+    buffer = io.BytesIO()
+    qr.save(buffer, "PNG")
+    buffer.seek(0)
+    return send_file(buffer, mimetype='image/png')
 
 @app.route('/agregar_producto', methods=['GET', 'POST'])
 def agregar_producto():
@@ -133,7 +173,6 @@ def editar_producto():
             flash("Producto no encontrado.")
             return redirect(url_for("index"))
 
-
 @app.route("/editar_lista")
 def editar_lista():
     conn = sqlite3.connect(DB_NAME)
@@ -142,8 +181,6 @@ def editar_lista():
     productos = cursor.fetchall()
     conn.close()
     return render_template("editar_producto.html", productos=productos)
-
-
 
 @app.route("/eliminar_producto", methods=["GET", "POST"])
 def eliminar_producto():
@@ -165,8 +202,6 @@ def eliminar_producto():
     conn.close()
     return render_template("eliminar_producto.html", productos=productos)
 
-
-
 @app.route("/historial")
 def historial():
     conn = sqlite3.connect(DB_NAME)
@@ -187,7 +222,6 @@ def historial():
         })
     conn.close()
     return render_template("historial.html", ventas=ventas_con_detalle)
-
 
 @app.route("/finalizar_venta", methods=["POST"])
 def finalizar_venta():
@@ -217,8 +251,9 @@ def finalizar_venta():
     conn.close()
     return jsonify({"status": "ok"})
 
-
 if __name__ == "__main__":
     init_db()
+    tread = threading.Thread(target=abrir_navegador_con_retraso)
+    tread.start()
     app.run(debug=True, host="0.0.0.0", port=5000)
 

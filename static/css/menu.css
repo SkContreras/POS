@@ -1,10 +1,10 @@
 .menu {
     width: 100%;
-    margin: 0 auto;
+    margin: 40px auto 0 auto;
     padding: 20px 40px;
     box-sizing: border-box;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 32px;
     justify-items: center;
     background-color: #f8f9fa;

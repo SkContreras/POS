@@ -1,0 +1,387 @@
+@import url('base.css');
+@import url('menu.css');
+@import url('sidebar.css');
+@import url('responsive.css');
+@import url('modal.css');
+
+
+/* Contenedor principal */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 10px;
+    gap: 30px;
+    min-height: 100vh;
+    margin-top: -6px; /* 32px decor-bar + 64px header/título, ajusta según tus necesidades */
+    margin-left: 250px;   /* ancho barra izquierda */
+    margin-right: 250px;  /* ancho barra derecha */
+    transition: margin 0.4s cubic-bezier(0.77,0,0.175,1);
+}
+
+
+.ventas-title {
+    text-align: center;
+    margin: 36px 0 28px 0;
+    color: #273c51;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.ventas-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.ventas-table {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 30px auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(44, 62, 80, 0.09);
+}
+
+.ventas-table th, .ventas-table td {
+    padding: 16px 14px;
+    text-align: left;
+    font-size: 1.05rem;
+}
+
+.ventas-table th {
+    background: var(--verde-hielo);
+    color: var(--azul-mar);
+    font-weight: 700;
+    border-bottom: 2px solid #e1e8ed;
+}
+
+.ventas-table tr {
+    border-bottom: 1px solid #e9eef2;
+}
+
+.ventas-table tr:nth-child(even) {
+    background: var(--gris-mar);
+}
+
+.ventas-table tr:hover {
+    background: var(--azul-claro);
+}
+
+.detalle-table {
+    width: 100%;
+    margin: 8px 0 0 0;
+    border-collapse: collapse;
+    background: #f9fbfd;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.98em;
+    box-shadow: 0 1px 4px rgba(44,62,80,0.04);
+}
+
+.detalle-table th, .detalle-table td {
+    padding: 8px 8px;
+    text-align: left;
+}
+
+.detalle-table th {
+    background: var(--verde-hielo);
+    color: var(--azul-mar);
+    font-weight: 600;
+    border-bottom: 1px solid #d6e6f3;
+}
+
+.detalle-table tr {
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.detalle-table tr:nth-child(even) {
+    background: var(--gris-mar);
+}
+
+.monto {
+    color: var(--coral);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* Botón para mostrar menú */
+.show-menu-btn {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 200;
+    background: var(--azul-mar);
+    color: #fff;
+    border: none;
+    border-radius: 0 12px 12px 0;
+    padding: 18px 12px 18px 6px;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.13);
+    transition: background 0.2s, left 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 38px;
+    height: 64px;
+}
+.show-menu-btn:hover {
+    background: var(--verde-agua);
+}
+
+.show-cart-btn {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 200;
+    background: var(--verde-hielo);
+    color: var(--azul-mar);
+    border: 2px solid var(--azul-mar);
+    border-radius: 12px 0 0 12px;
+    width: 38px;
+    height: 64px;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: -2px 0 8px rgba(0,0,0,0.13);
+    transition: background 0.2s, right 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 18px 6px 18px 12px;
+}
+.show-cart-btn:hover {
+    background: var(--coral);
+    color: #fff;
+}
+
+.centered-header {
+    justify-content: center !important;
+    gap: 32px;
+}
+.centered-header > div:first-child {
+    margin-right: 24px;
+}
+.centered-header > div:last-child {
+    margin-left: 24px;
+}
+
+/* Puedes ajustar los valores según el ancho de tu menú lateral */
+/* Barra negra decorativa superior */
+.decor-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 54px;
+    background: linear-gradient(90deg, var(--azul-mar) 0%, var(--verde-agua) 100%);
+    z-index: 200;
+    pointer-events: none;
+    box-shadow: 0 4px 18px rgba(44,62,80,0.13);
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+    opacity: 0.97;
+}
+
+/* Título Mega-Mas: por defecto a la derecha de la barra izquierda */
+#tituloMegaMas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 60px;
+    background: linear-gradient(90deg, var(--verde-agua) 0%, var(--azul-mar) 100%);
+    color: #fff;
+    font-size: 2.2em;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom-right-radius: 26px;
+    border-top-right-radius: 20px;
+    box-shadow: 2px 6px 24px rgba(44,62,80,0.16);
+    margin-left: 250px; /* Mismo ancho que la barra izquierda */
+    transition: margin-left 0.4s cubic-bezier(0.77,0,0.175,1);
+    z-index: 999;
+    border-left: 5px solid var(--coral);
+    text-shadow: 1px 2px 12px rgba(44,62,80,0.18);
+    opacity: 0.99;
+    animation: slideInLeft 1s ease-out forwards;
+}
+
+/* Cuando la barra izquierda está colapsada, el título se va a la izquierda */
+body.left-collapsed #tituloMegaMas {
+    margin-left: 0;
+}
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Barra de búsqueda fija arriba mejorada */
+.search-bar {
+    position: fixed;
+    top: 0; /* Asegura que esté pegada arriba */
+    right: 249px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+    border: 1.5px solid var(--verde-agua);
+    border-radius: 21px; /* Redondeo de esquinas */
+    transition: right 0.3s, width 0.3s, background 0.3s;
+    z-index: 1001; /* Más alto que .decor-bar y #tituloMegaMas */
+    background: #fff; /* Opcional: fondo blanco para que destaque */
+}
+
+.search-bar input[type="text"], .search-bar input[type="search"] {
+    border: none;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 1.1em;
+    box-shadow: 0 1px 4px rgba(44,62,80,0.06);
+    transition: box-shadow 0.2s;
+}
+.search-bar input[type="text"]:focus, .search-bar input[type="search"]:focus {
+    outline: none;
+    box-shadow: 0 2px 8px #2ecc71aa;
+}
+.search-bar button, .search-bar .search-btn {
+    background: linear-gradient(90deg, var(--azul-mar) 0%, var(--verde-agua) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    transition: background 0.2s, transform 0.15s;
+}
+.search-bar button:hover, .search-bar .search-btn:hover {
+    background: linear-gradient(90deg, var(--coral) 0%, var(--naranja-marisco) 100%);
+    color: var(--azul-profundo);
+}
+
+/* Si la barra derecha está oculta, la barra de búsqueda se pega al borde derecho */
+body.sidebar-closed .search-bar,
+body.both-collapsed .search-bar {
+    right: 1px;
+}
+
+/* Si la barra izquierda está colapsada, elimina el margen izquierdo */
+body.left-collapsed .container {
+    margin-left: 0;
+}
+
+/* Si la barra derecha está colapsada, elimina el margen derecho */
+body.sidebar-closed .container {
+    margin-right: 0;
+}
+
+/* Si ambas barras están colapsadas, ocupa todo el ancho */
+body.left-collapsed.sidebar-closed .container {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.producto {
+    transition: all 0.3s ease-in-out;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.producto.oculto {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.producto:not(.oculto) {
+    animation: aparecer 0.3s ease-out;
+}
+
+@keyframes aparecer {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Estilos específicos para la página de Agregar Producto */
+#agregar-producto-page .form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 72px
+}
+
+#agregar-producto-page .form-group {
+    margin-bottom: 16px;
+}
+
+#agregar-producto-page .form-control,
+#agregar-producto-page .form-control-file {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+#agregar-producto-page .submit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+#agregar-producto-page .submit-button:hover {
+    background-color: #45a049;
+}
+
+#drop-area {
+    border: 2px dashed #3ec6c1;
+    padding: 20px;
+    text-align: center;
+    border-radius: 16px;
+    background-color: #fafdff;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#drop-area:hover {
+    background-color: #e9f9f8;
+    border-color: #1e5d88;
+}
+
+#drop-area p {
+    margin: 0;
+    font-size: 14px;
+    color: #1e5d88;
+}

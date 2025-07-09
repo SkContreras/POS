@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Historial de Ventas{% endblock %}
+
+{% block content %}
+    <h2 class="ventas-title">Historial de Ventas</h2>
+    <div class="ventas-wrapper">
+        <table class="ventas-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Detalles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in ventas %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ venta.fecha }}</td>
+                    <td><span class="monto">${{ "%.2f"|format(venta.total) }}</span></td>
+                    <td>
+                        <table class="detalle-table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in venta.detalles %}
+                                <tr>
+                                    <td>{{ d[0] }}</td>
+                                    <td>{{ d[1] }}</td>
+                                    <td><span class="monto">${{ "%.2f"|format(d[2]) }}</span></td>
+                                    <td><span class="monto">${{ "%.2f"|format(d[3]) }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align:center;color:#888;">No hay ventas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

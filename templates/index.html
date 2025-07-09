@@ -20,7 +20,16 @@
             <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
             <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
             <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+            <a href="#" onclick="shutdownServer()" style="cursor:pointer;">🚪 Cerrar tienda</a>
         </nav>
+        <div id="qr-container" style="margin-top: 20px; text-align: center;">
+            <h4 style="font-size: 14px;">Escanéame 📱</h4>
+            <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
+            <p style="font-size: 12px; margin-top: 10px; color: #555;">
+                Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
+                Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
+            </p>
+        </div>
     </div>
     <!-- Botón flotante para mostrar la barra de gestión cuando está colapsada -->
     <button id="showMenuBtn" class="toggle-gestion-fixed" onclick="toggleGestion()">☰</button>
@@ -205,6 +214,22 @@
             });
         });
 
+        // Función para cerrar el servidor
+        function shutdownServer() {
+            fetch('/shutdown', {
+            method: 'POST'
+            })
+            .then(response => response.text())
+            .then(data => {
+            alert(data);  // Mostrar mensaje de que se cerró
+            window.close(); // Intentar cerrar la pestaña (puede fallar en algunos navegadores)
+            })
+            .catch(error => {
+            alert('Error al cerrar el servidor');
+            console.error(error);
+            });
+        }
     </script>
+    <div id="toast">¡Venta guardada con éxito! 🎉</div>
 </body>
 </html>

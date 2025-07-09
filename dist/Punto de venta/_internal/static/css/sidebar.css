@@ -1,0 +1,278 @@
+/* --- Barra lateral derecha mejorada (igual que la izquierda) --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 250px;              /* Unificado con la izquierda */
+    height: 100vh;
+    background: linear-gradient(180deg, var(--azul-mar, #2980b9) 80%, var(--verde-agua, #1abc9c) 100%);
+    color: #fff;
+    padding-top: 60px;         /* Unificado con la izquierda */
+    z-index: 300;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: -4px 0 24px 0 var(--sombra-mar, rgba(44,62,80,0.08));
+    border-left: 2px solid var(--verde-agua, #1abc9c);
+    backdrop-filter: blur(6px);
+}
+
+.sidebar .toggle-cart {
+    background: rgba(255,255,255,0.10);
+    color: var(--verde-hielo, #b2f1e5);
+    border: none;
+    font-size: 2.1rem;
+    margin-bottom: 28px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 8px 16px;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.sidebar .toggle-cart:hover {
+    background: var(--verde-agua);
+    color: #fff;
+}
+
+.sidebar h3 {
+    margin-bottom: 18px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--verde-hielo, #b2f1e5);
+}
+
+.sidebar ul#carrito {
+    width: 100%;
+    padding: 0 0 0 0;
+    margin: 0 0 18px 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.sidebar ul#carrito li {
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.18s;
+}
+
+.sidebar ul#carrito li:hover {
+    background: var(--verde-agua);
+    color: var(--azul-profundo);
+}
+
+.sidebar p {
+    margin: 10px 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--coral, #ff7f50);
+    letter-spacing: 0.2px;
+}
+
+.sidebar .cart-btn {
+    background-color: var(--coral, #ff7f50);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 10px 0 8px 0;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.5px;
+}
+.sidebar .cart-btn:hover {
+    background-color: var(--naranja-marisco, #ffb347);
+    transform: translateY(-2px) scale(1.03);
+}
+
+.sidebar hr {
+    width: 90%;
+    border: none;
+    border-top: 1.5px solid rgba(255,255,255,0.10);
+    margin: 18px 0 10px 0;
+}
+
+.sidebar a {
+    display: block;
+    background: var(--azul-mar, #2980b9);
+    color: #fff !important;
+    border-radius: 8px;
+    padding: 12px 0;
+    width: 90%;               /* Unificado con la izquierda */
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 8px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+}
+.sidebar a:hover {
+    background: var(--verde-agua, #1abc9c);
+    color: var(--azul-profundo, #22313F) !important;
+}
+
+/* Sidebar izquierda */
+.sidebar.left {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+    transition: transform 0.3s;
+    transform: none;
+}
+
+.sidebar.left.collapsed {
+    transform: translateX(-100%);
+}
+
+.sidebar.left .toggle-gestion {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar.left h3 {
+    margin-bottom: 24px;
+    color: var(--azul-mar, #2980b9);
+}
+
+.sidebar.left nav {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    align-items: center;
+}
+
+.sidebar.left nav a {
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border-radius: 8px;
+    padding: 14px 0;
+    width: 90%;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.sidebar.left nav a:hover {
+    background: var(--verde-agua, #1abc9c);
+    color: var(--azul-profundo, #22313F);
+}
+
+/* Colapso unificado */
+.sidebar.collapsed {
+    transform: translateX(100%);
+}
+
+.sidebar,
+.sidebar.left {
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08); /* Sombra unificada */
+    border-radius: 0 12px 12px 0; /* Bordes redondeados solo en el lado visible */
+}
+
+/* Si quieres que la derecha tenga el borde opuesto: */
+.sidebar {
+    border-radius: 12px 0 0 12px;
+    /* ...otros estilos... */
+}
+.sidebar.left {
+    border-radius: 0 12px 12px 0;
+    /* ...otros estilos... */
+}
+
+/* Unifica box-shadow y border-radius en los enlaces */
+.sidebar a,
+.sidebar.left nav a {
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    border-radius: 8px;
+}
+
+/* Botón de toggle para la barra izquierda, centrado verticalmente y fuera de la barra */
+.toggle-gestion-fixed {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 0 50% 50% 0;
+    width: 40px;
+    height: 60px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2002;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.12);
+    display: none; /* Oculto por defecto */
+}
+
+/* Mostrar solo cuando la barra izquierda está colapsada */
+.sidebar.left.collapsed ~ .toggle-gestion-fixed {
+    display: block;
+}
+
+/* Ocultar el botón original dentro de la barra cuando está colapsada */
+.sidebar.left.collapsed .toggle-gestion {
+    display: none;
+}
+
+body.left-collapsed #showMenuBtn {
+    display: block !important;
+}
+
+/* Animación de pulso */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.5);
+        transform: scale(1);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(41, 128, 185, 0);
+        transform: scale(1.08);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0);
+        transform: scale(1);
+    }
+}
+
+/* Aplica el pulso al botón flotante */
+.toggle-gestion-fixed.pulse,
+#showMenuBtn.pulse {
+    animation: pulse 1.2s infinite;
+}
+
+

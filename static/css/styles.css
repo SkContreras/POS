@@ -13,7 +13,7 @@
     padding: 40px 10px;
     gap: 30px;
     min-height: 100vh;
-    margin-top: 96px; /* 32px decor-bar + 64px header/título, ajusta según tus necesidades */
+    margin-top: -6px; /* 32px decor-bar + 64px header/título, ajusta según tus necesidades */
     margin-left: 250px;   /* ancho barra izquierda */
     margin-right: 250px;  /* ancho barra derecha */
     transition: margin 0.4s cubic-bezier(0.77,0,0.175,1);
@@ -135,8 +135,6 @@
     background: var(--verde-agua);
 }
 
-
-/* Agrega esto a tu styles.css */
 .show-cart-btn {
     position: fixed;
     top: 50%;
@@ -244,10 +242,12 @@ body.left-collapsed #tituloMegaMas {
     padding: 0 28px;
     gap: 16px;
     border: 1.5px solid var(--verde-agua);
+    border-radius: 21px; /* Redondeo de esquinas */
     transition: right 0.3s, width 0.3s, background 0.3s;
     z-index: 1001; /* Más alto que .decor-bar y #tituloMegaMas */
     background: #fff; /* Opcional: fondo blanco para que destaque */
 }
+
 .search-bar input[type="text"], .search-bar input[type="search"] {
     border: none;
     background: #fff;
@@ -282,16 +282,6 @@ body.left-collapsed #tituloMegaMas {
 body.sidebar-closed .search-bar,
 body.both-collapsed .search-bar {
     right: 1px;
-    width: calc(100vw - 32px);
-}
-
-/* Asegúrate que el grid de productos se adapte al espacio */
-.menu {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 18px;
-    width: 100%;
-    transition: width 0.4s cubic-bezier(0.77,0,0.175,1);
 }
 
 /* Si la barra izquierda está colapsada, elimina el margen izquierdo */
@@ -336,4 +326,62 @@ body.left-collapsed.sidebar-closed .container {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* Estilos específicos para la página de Agregar Producto */
+#agregar-producto-page .form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 72px
+}
+
+#agregar-producto-page .form-group {
+    margin-bottom: 16px;
+}
+
+#agregar-producto-page .form-control,
+#agregar-producto-page .form-control-file {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+#agregar-producto-page .submit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+#agregar-producto-page .submit-button:hover {
+    background-color: #45a049;
+}
+
+#drop-area {
+    border: 2px dashed #3ec6c1;
+    padding: 20px;
+    text-align: center;
+    border-radius: 16px;
+    background-color: #fafdff;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+#drop-area:hover {
+    background-color: #e9f9f8;
+    border-color: #1e5d88;
+}
+
+#drop-area p {
+    margin: 0;
+    font-size: 14px;
+    color: #1e5d88;
 }
