@@ -16,3 +16,83 @@
   background: #3498db; color: #fff; border: none; padding: 8px 20px; border-radius: 6px; font-size: 1rem; cursor: pointer;
 }
 #confirmCantidadBtn:hover { background: #217dbb; }
+
+/* Estilos para el toast */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #4CAF50; /* verde agradable */
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    box-shadow: 0 0 15px #4CAF50;
+    opacity: 0;
+    transition: opacity 0.5s ease, bottom 0.5s ease;
+}
+
+/* Mostrar el toast */
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px;
+}
+
+/* Animación de celebración (brillo) */
+@keyframes shine {
+    0% {
+        box-shadow: 0 0 10px #4CAF50, 0 0 20px #4CAF50, 0 0 30px #4CAF50;
+    }
+    50% {
+        box-shadow: 0 0 20px #81C784, 0 0 30px #81C784, 0 0 40px #81C784;
+    }
+    100% {
+        box-shadow: 0 0 10px #4CAF50, 0 0 20px #4CAF50, 0 0 30px #4CAF50;
+    }
+}
+
+/* Aplica la animación de brillo al toast */
+#toast.show {
+    animation: shine 1.5s ease-in-out infinite;
+}
+
+/* Estilos base ya los tienes: #toast, #toast.show, etc. */
+
+#toast.success {
+    background-color: #28a745; /* verde éxito */
+    animation: shine-success 1s ease-in-out infinite alternate;
+}
+
+#toast.error {
+    background-color: #dc3545; /* rojo error */
+    animation: shine-error 1s ease-in-out infinite alternate;
+}
+
+#toast.warning {
+    background-color: #ffc107; /* amarillo advertencia */
+    color: black;
+    animation: shine-warning 1s ease-in-out infinite alternate;
+}
+
+/* Brillos animados por tipo */
+@keyframes shine-success {
+    from { box-shadow: 0 0 12px #28a745, 0 0 18px #28a745; }
+    to   { box-shadow: 0 0 18px #6fdc92, 0 0 26px #6fdc92; }
+}
+
+@keyframes shine-error {
+    from { box-shadow: 0 0 12px #dc3545, 0 0 18px #dc3545; }
+    to   { box-shadow: 0 0 18px #ff6b81, 0 0 26px #ff6b81; }
+}
+
+@keyframes shine-warning {
+    from { box-shadow: 0 0 12px #ffc107, 0 0 18px #ffc107; }
+    to   { box-shadow: 0 0 18px #ffe066, 0 0 26px #ffe066; }
+}
+

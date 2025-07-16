@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Punto de Venta{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.jpeg') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="decor-bar"></div>
+    <!-- Sidebar izquierda para gestión -->
+    <div class="sidebar left collapsed" id="gestionSidebar">
+        <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
+        <h3>Gestión</h3>
+        <nav>
+            <a href="{{ url_for('index') }}">💰 Vender</a>
+            <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
+            <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
+            <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+        </nav>
+    </div>
+    <button class="toggle-gestion-fixed pulse" onclick="toggleGestion()">☰</button>
+    {% block content %}{% endblock %}
+    <script>
+        function toggleGestion() {
+            const gestion = document.getElementById('gestionSidebar');
+            gestion.classList.toggle('collapsed');
+            if (gestion.classList.contains('collapsed')) {
+                document.body.classList.add('left-collapsed');
+            } else {
+                document.body.classList.remove('left-collapsed');
+            }
+
+            // --- NUEVO: Actualiza las clases de body para las columnas ---
+            const cart = document.getElementById('cartSidebar');
+            const leftClosed = gestion.classList.contains('collapsed');
+            const rightClosed = cart && cart.classList.contains('collapsed');
+            if (leftClosed && rightClosed) {
+                document.body.classList.add('both-collapsed');
+                document.body.classList.remove('sidebar-open', 'sidebar-closed');
+            } else if (leftClosed || rightClosed) {
+                document.body.classList.add('sidebar-closed');
+                document.body.classList.remove('sidebar-open', 'both-collapsed');
+            } else {
+                document.body.classList.add('sidebar-open');
+                document.body.classList.remove('sidebar-closed', 'both-collapsed');
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

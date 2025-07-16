@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Eliminar Producto{% endblock %}
+
+{% block content %}
+    <div class="menu">
+        {% if productos %}
+            {% for p in productos %}
+            <div class="producto">
+                <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="Imagen de {{ p[1] }}">
+                <h4>{{ p[1] }}</h4>
+                <p>${{ "%.2f"|format(p[2]) }}</p>
+                <form method="post" action="{{ url_for('eliminar_producto') }}">
+                    <input type="hidden" name="producto_id" value="{{ p[0] }}">
+                    <button class="eliminar-btn" type="submit" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">Eliminar</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="margin:30px auto;color:#888;">No hay productos para mostrar.</p>
+        {% endif %}
+    </div>
+    <div style="clear: both;"></div>
+{% endblock %}

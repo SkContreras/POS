@@ -1,0 +1,204 @@
+/* Responsive para pantallas pequeñas */
+@media (max-width: 900px) {
+    .menu {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 8px;
+    }
+    body.both-collapsed .menu {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 4px;
+    }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .side-menu {
+        width: 170px;
+        padding-top: 18px;
+    }
+    .sidebar {
+        width: 98vw;
+        max-width: 340px;
+        padding: 18px 8px;
+    }
+    .container {
+        margin-left: 0;
+        margin-right: 0;
+        padding: 12px 2vw;
+        margin-top: 70px; /* 22px decor-bar + 48px header/título */
+    }
+    .side-menu.collapsed {
+        transform: translateX(-100%);
+        opacity: 0.7;
+    }
+    .sidebar.collapsed {
+        transform: translateX(100%);
+    }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px 4px;
+    }
+    .sidebar {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 24px;
+    }
+    .menu {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    form.form, form {
+        max-width: 98vw;
+    }
+}
+
+@media (max-width: 900px) {
+    .show-menu-btn {
+        top: 14px;
+        left: 8px;
+        width: 42px;
+        height: 42px;
+        font-size: 1.6rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .show-cart-btn {
+        top: 14px;
+        right: 8px;
+        width: 42px;
+        height: 42px;
+        font-size: 1.6rem;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 900px) {
+    .decor-bar {
+        height: 38px;
+        border-bottom-left-radius: 14px;
+        border-bottom-right-radius: 14px;
+    }
+}
+
+@media (max-width: 900px) {
+    #tituloMegaMas {
+        width: 180px;
+        font-size: 1.3em;
+        height: 44px;
+        margin-left: 170px;
+        top: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .search-bar {
+        top: 8px;
+        right: 8px;
+        width: calc(100vw - 16px);
+        padding: 0 10px;
+        border-radius: 10px;
+        height: 40px;
+    }
+    body.sidebar-closed .search-bar,
+    body.both-collapsed .search-bar {
+        right: 8px;
+        width: calc(100vw - 16px);
+    }
+}
+
+/* --- MEJORAS PARA CELULARES --- */
+@media (max-width: 600px) {
+    body {
+        font-size: 20px; /* más grande */
+    }
+
+    .menu {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 0;
+    }
+
+    .producto {
+        padding: 24px 14px;
+        border-radius: 16px;
+    }
+
+    .producto img {
+        height: 140px;
+        border-radius: 12px;
+    }
+
+    .producto h4 {
+        font-size: 1.4em;
+    }
+
+    .producto p {
+        font-size: 1.2em;
+    }
+
+    .ventas-title {
+        font-size: 1.8rem;
+        margin: 28px 0 18px 0;
+    }
+
+    .ventas-table,
+    .detalle-table {
+        font-size: 1.25em;
+    }
+
+    .ventas-table th,
+    .ventas-table td,
+    .detalle-table th,
+    .detalle-table td {
+        padding: 16px 10px;
+    }
+
+    .show-menu-btn,
+    .show-cart-btn {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 2.4rem !important;
+    }
+
+    .search-bar input[type="text"],
+    .search-bar input[type="search"] {
+        font-size: 1.25em;
+        padding: 14px 16px;
+    }
+
+    .search-bar button,
+    .search-bar .search-btn {
+        font-size: 1.25em;
+        padding: 14px 16px;
+    }
+
+    form.form, form {
+        padding: 28px 14px;
+        font-size: 1.2em;
+    }
+
+    .mejor-back-link {
+        font-size: 1.25em;
+        padding: 16px 0;
+    }
+
+    .image-preview, #preview {
+        max-width: 180px;
+        max-height: 180px;
+    }
+
+    .side-menu nav a,
+    .sidebar a,
+    .sidebar .cart-btn,
+    .cart-btn {
+        font-size: 1.25em;
+        padding: 20px 0;
+    }
+}

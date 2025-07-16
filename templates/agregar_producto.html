@@ -1,18 +1,11 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Agregar Producto</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-</head>
-<body>
 {% extends "base.html" %}
 
 {% block title %}Agregar Producto{% endblock %}
 
 {% block content %}
-    <h2 class="title">Agregar Producto</h2>
+<div id="agregar-producto-page">
     <form method="post" enctype="multipart/form-data" class="form">
+        <h2 class="title" style="text-align:center; margin-bottom: 24px;">Agregar Producto</h2>
         <div class="form-group">
             <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" class="form-control" required>
@@ -20,16 +13,36 @@
         <div class="form-group">
             <label for="precio">Precio:</label>
             <input type="number" id="precio" name="precio" step="0.01" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="fileInput" class="file-button">Subir Imagen</label>
-            <input type="file" id="fileInput" name="fileInput" accept="image/*" class="form-control-file" onchange="loadFile(event)">
+       <div class="form-group">
+            <label for="fileInput">Imagen del producto:</label>
+            <div id="drop-area" onclick="document.getElementById('fileInput').click();">
+                <p>Haz clic aquí o arrastra una imagen</p>
+                <input type="file" id="fileInput" name="fileInput" accept="image/*" onchange="loadFile(event)" style="display: none;">
+            </div>
         </div>
         <div class="form-group preview-container">
             <img id="preview" src="#" alt="Vista previa" style="display:none;max-width:180px;border-radius:10px;margin-top:10px;">
         </div>
         <button type="submit" class="submit-button">Agregar</button>
     </form>
+</div>
+{% endblock %}
+
+
+
+{% block sidebar %}
+<div class="sidebar left" id="gestionSidebar">
+    <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
+    <h3>Gestión</h3>
+    <nav>
+        <a href="{{ url_for('index') }}">💰 Vender</a>
+        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
+        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
+        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+        <a href="{{ url_for('historial') }}">📋 Historial</a>
+    </nav>
+</div>
+<button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>
 {% endblock %}
 
 {% block scripts %}
@@ -46,20 +59,29 @@
             reader.readAsDataURL(file);
         }
     }
+    const dropArea = document.getElementById("drop-area");
+    const fileInput = document.getElementById("fileInput");
+
+    dropArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropArea.style.backgroundColor = "#d6f0f0";
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+        dropArea.style.backgroundColor = "#fafdff";
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropArea.style.backgroundColor = "#fafdff";
+        fileInput.files = e.dataTransfer.files;
+        loadFile({ target: { files: e.dataTransfer.files } });
+    });
+
+    function loadFile(event) {
+        const preview = document.getElementById("preview");
+        preview.src = URL.createObjectURL(event.target.files[0]);
+        preview.style.display = "block";
+    }
 </script>
 {% endblock %}
-</body>
-<!-- Barra lateral izquierda de navegación -->
-<div class="sidebar left" id="gestionSidebar">
-    <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
-    <h3>Gestión</h3>
-    <nav>
-        <a href="{{ url_for('index') }}">💰 Vender</a>
-        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
-        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-        <a href="{{ url_for('historial') }}">📋 Historial</a>
-    </nav>
-</div>
-<button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>
-</html>

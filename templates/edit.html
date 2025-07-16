@@ -2,7 +2,6 @@
 {% block title %}Editar Producto{% endblock %}
 
 {% block content %}
-    <h2>Editar Producto</h2>
     <form method="post" enctype="multipart/form-data" action="{{ url_for('editar_producto') }}?producto_id={{ producto.id }}" class="form">
         <input type="hidden" name="producto_id" value="{{ producto.id }}">
 

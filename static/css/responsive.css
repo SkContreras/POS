@@ -116,138 +116,89 @@
 /* --- MEJORAS PARA CELULARES --- */
 @media (max-width: 600px) {
     body {
-        font-size: 18px; /* Más grande para mejor lectura */
-        padding: 0;
+        font-size: 20px; /* más grande */
     }
-    .side-menu,
-    .sidebar {
-        width: 100vw !important;
-        min-width: 0;
-        max-width: 100vw;
-        left: 0 !important;
-        right: 0 !important;
-        border-radius: 0 0 18px 18px;
-        padding: 20px 4vw 24px 4vw; /* Más padding */
-        box-shadow: 0 4px 18px rgba(44,62,80,0.13);
-    }
-    .side-menu .toggle,
-    .sidebar .toggle-cart {
-        font-size: 2.2rem; /* Botón más grande */
-        padding: 10px 18px;
-        margin-bottom: 18px;
-    }
-    .container {
-        margin: 0 !important;
-        padding: 16px 2vw !important;
-        min-height: 100vh;
-        width: 100vw;
-        max-width: 100vw;
-    }
+
     .menu {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Tarjetas más anchas */
-        gap: 16px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
         padding: 0;
     }
+
     .producto {
-        padding: 20px 10px 16px 10px;
-        border-radius: 14px;
+        padding: 24px 14px;
+        border-radius: 16px;
     }
+
     .producto img {
-        height: 120px;
-        border-radius: 10px;
+        height: 140px;
+        border-radius: 12px;
     }
+
     .producto h4 {
-        font-size: 1.25em;
+        font-size: 1.4em;
     }
+
     .producto p {
-        font-size: 1.1em;
+        font-size: 1.2em;
     }
+
     .ventas-title {
-        font-size: 1.5rem;
-        margin: 24px 0 16px 0;
+        font-size: 1.8rem;
+        margin: 28px 0 18px 0;
     }
+
     .ventas-table,
     .detalle-table {
-        font-size: 1.1em;
-        border-radius: 10px;
+        font-size: 1.25em;
     }
+
     .ventas-table th,
     .ventas-table td,
     .detalle-table th,
     .detalle-table td {
-        padding: 14px 8px;
+        padding: 16px 10px;
     }
+
     .show-menu-btn,
     .show-cart-btn {
-        top: unset !important;
-        bottom: 18px !important;
-        left: 12px !important;
-        right: 12px !important;
-        width: 56px !important;
-        height: 56px !important;
-        font-size: 2rem !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 2.4rem !important;
     }
-    .show-cart-btn {
-        left: unset !important;
-        right: 12px !important;
+
+    .search-bar input[type="text"],
+    .search-bar input[type="search"] {
+        font-size: 1.25em;
+        padding: 14px 16px;
     }
-    #tituloMegaMas {
-        width: 99vw !important;
-        margin-left: 0 !important;
-        left: 0 !important;
-        font-size: 1.4em !important;
-        height: 48px !important;
-        border-radius: 0 0 18px 18px;
-        border-left: none;
-        top: 0 !important;
-        padding: 0 10px;
+
+    .search-bar button,
+    .search-bar .search-btn {
+        font-size: 1.25em;
+        padding: 14px 16px;
     }
-    .decor-bar {
-        height: 32px !important;
-        border-radius: 0 0 12px 12px;
-    }
-    .search-bar {
-        position: static !important;
-        width: 100vw !important;
-        border-radius: 10px !important;
-        margin: 12px 0 18px 0 !important;
-        box-shadow: none !important;
-        padding: 0 5vw !important;
-        height: 48px !important;
-    }
-    .search-bar input[type="text"], .search-bar input[type="search"] {
-        font-size: 1.15em;
-        padding: 12px 14px;
-    }
-    .search-bar button, .search-bar .search-btn {
-        padding: 12px 14px;
-        font-size: 1.1em;
-    }
+
     form.form, form {
-        padding: 22px 10px;
-        border-radius: 12px;
-        max-width: 99vw;
+        padding: 28px 14px;
+        font-size: 1.2em;
     }
+
     .mejor-back-link {
-        font-size: 1.15em;
-        padding: 14px 0;
-        border-radius: 10px;
-        margin-top: 22px;
+        font-size: 1.25em;
+        padding: 16px 0;
     }
-    /* Unificadas reglas repetidas */
+
     .image-preview, #preview {
-        max-width: 160px;
-        max-height: 160px;
-        border-radius: 10px;
+        max-width: 180px;
+        max-height: 180px;
     }
+
     .side-menu nav a,
     .sidebar a,
     .sidebar .cart-btn,
     .cart-btn {
-        font-size: 1.15em;
-        padding: 18px 0;
+        font-size: 1.25em;
+        padding: 20px 0;
     }
 }
