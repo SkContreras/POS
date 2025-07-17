@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="form-page-container">
-    <form method="post" enctype="multipart/form-data" action="{{ url_for('editar_producto') }}?producto_id={{ producto.id }}" class="form" onsubmit="return confirmarEdicion(event, '{{ producto.nombre }}');">
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('productos.editar_producto') }}?producto_id={{ producto.id }}" class="form" onsubmit="return confirmarEdicion(event, '{{ producto.nombre }}');">
         <input type="hidden" name="producto_id" value="{{ producto.id }}">
 
         <div class="form-group">

@@ -26,17 +26,17 @@
         {% endif %}
         
         <nav>
-            <a href="{{ url_for('index') }}">💰 Vender</a>
+            <a href="{{ url_for('main.index') }}">💰 Vender</a>
             {% if session.rol == 'administrador' %}
-            <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
-            <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-            <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+            <a href="{{ url_for('productos.agregar_producto') }}">➕ Agregar</a>
+            <a href="{{ url_for('productos.editar_lista') }}">✏️ Editar</a>
+            <a href="{{ url_for('productos.eliminar_producto') }}">🗑️ Eliminar</a>
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
-            <a href="{{ url_for('gestionar_usuarios') }}">👥 Usuarios</a>
-            <a href="{{ url_for('log_acciones') }}">📊 Log</a>
+            <a href="{{ url_for('auth.gestionar_usuarios') }}">👥 Usuarios</a>
+            <a href="{{ url_for('auth.log_acciones') }}">📊 Log</a>
             {% endif %}
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
-            <a href="{{ url_for('logout') }}" style="color: #ff6b6b;" onclick="return confirm('¿Cerrar sesión?')">🚪 Cerrar Sesión</a>
+            <a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;" onclick="return confirm('¿Cerrar sesión?')">🚪 Cerrar Sesión</a>
         </nav>
     </div>
     <button class="toggle-gestion-fixed pulse" onclick="toggleGestion()">☰</button>

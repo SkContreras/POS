@@ -21,7 +21,7 @@
     <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 25px;">
         <h3 style="margin-bottom: 20px; color: #333;">➕ Crear Nuevo Usuario</h3>
         
-        <form method="POST" action="{{ url_for('crear_usuario') }}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end;">
+        <form method="POST" action="{{ url_for('auth.crear_usuario') }}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end;">
             <div class="form-group">
                 <label for="usuario" style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre de Usuario:</label>
                 <input type="text" id="usuario" name="usuario" required 
@@ -57,6 +57,59 @@
             </div>
         </form>
     </div>
+
+    <!-- Sección para cambiar credenciales del administrador -->
+    {% if session.rol == 'administrador' %}
+    <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 25px;">
+        <h3 style="margin-bottom: 20px; color: #333;">🔑 Cambiar Mis Credenciales</h3>
+        
+        <form method="POST" action="{{ url_for('auth.cambiar_credenciales') }}" onsubmit="return validarCambioCredenciales()" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end;">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="password_actual" style="display: block; margin-bottom: 5px; font-weight: bold; color: #dc3545;">Contraseña Actual (requerida):</label>
+                <input type="password" id="password_actual" name="password_actual" required 
+                       style="width: 100%; padding: 10px; border: 2px solid #dc3545; border-radius: 6px;"
+                       placeholder="Ingrese su contraseña actual para confirmar los cambios">
+            </div>
+            
+            <div class="form-group">
+                <label for="nuevo_usuario" style="display: block; margin-bottom: 5px; font-weight: bold;">Nuevo Nombre de Usuario (opcional):</label>
+                <input type="text" id="nuevo_usuario" name="nuevo_usuario" 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;"
+                       placeholder="Actual: {{ session.usuario }}"
+                       minlength="3">
+            </div>
+            
+            <div class="form-group">
+                <label for="nueva_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Nueva Contraseña (opcional):</label>
+                <input type="password" id="nueva_password" name="nueva_password" 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;"
+                       placeholder="Mínimo 4 caracteres"
+                       minlength="4">
+            </div>
+            
+            <div class="form-group">
+                <label for="confirmar_password" style="display: block; margin-bottom: 5px; font-weight: bold;">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="confirmar_password" name="confirmar_password" 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;"
+                       placeholder="Repetir nueva contraseña">
+            </div>
+            
+            <div class="form-group" style="grid-column: span 1;">
+                <button type="submit" 
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: transform 0.2s;">
+                    🔄 Actualizar Credenciales
+                </button>
+            </div>
+        </form>
+        
+        <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-left: 4px solid #007bff; border-radius: 4px;">
+            <small style="color: #0056b3;">
+                <strong>Nota:</strong> Si cambia su nombre de usuario, deberá iniciar sesión nuevamente. 
+                Puede cambiar solo el usuario, solo la contraseña, o ambos a la vez.
+            </small>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Lista de usuarios existentes -->
     <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px;">
@@ -99,7 +152,7 @@
                         </td>
                         <td style="padding: 12px; text-align: center;">
                             {% if user[0] != session.user_id %}
-                            <a href="{{ url_for('cambiar_estado_usuario', user_id=user[0]) }}" 
+                            <a href="{{ url_for('auth.cambiar_estado_usuario', user_id=user[0]) }}" 
                                onclick="return confirmarCambioEstado('{{ user[1] }}', {{ user[4] }})"
                                style="padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;
                                       {% if user[4] %}background: #ffc107; color: #212529;{% else %}background: #28a745; color: white;{% endif %}">
@@ -169,6 +222,63 @@ function confirmarCreacion() {
     const rol = document.getElementById('rol').value;
     
     return confirm(`¿Crear usuario "${nombre}" con rol de ${rol}?`);
+}
+
+function validarCambioCredenciales() {
+    const passwordActual = document.getElementById('password_actual').value;
+    const nuevoUsuario = document.getElementById('nuevo_usuario').value.trim();
+    const nuevaPassword = document.getElementById('nueva_password').value;
+    const confirmarPassword = document.getElementById('confirmar_password').value;
+    
+    // Verificar que se ingresó la contraseña actual
+    if (!passwordActual) {
+        alert('Debe ingresar su contraseña actual');
+        return false;
+    }
+    
+    // Verificar que se especificó al menos un cambio
+    if (!nuevoUsuario && !nuevaPassword) {
+        alert('Debe especificar al menos un nuevo usuario o contraseña');
+        return false;
+    }
+    
+    // Validar nueva contraseña si se especificó
+    if (nuevaPassword) {
+        if (nuevaPassword.length < 4) {
+            alert('La nueva contraseña debe tener al menos 4 caracteres');
+            return false;
+        }
+        
+        if (nuevaPassword !== confirmarPassword) {
+            alert('Las contraseñas no coinciden');
+            return false;
+        }
+    }
+    
+    // Validar nuevo usuario si se especificó
+    if (nuevoUsuario && nuevoUsuario.length < 3) {
+        alert('El nuevo nombre de usuario debe tener al menos 3 caracteres');
+        return false;
+    }
+    
+    // Confirmar los cambios
+    let mensaje = '¿Está seguro de que desea actualizar ';
+    let cambios = [];
+    
+    if (nuevoUsuario) {
+        cambios.push('su nombre de usuario');
+    }
+    if (nuevaPassword) {
+        cambios.push('su contraseña');
+    }
+    
+    mensaje += cambios.join(' y ') + '?';
+    
+    if (nuevoUsuario) {
+        mensaje += '\n\nNota: Si cambia su nombre de usuario, deberá iniciar sesión nuevamente.';
+    }
+    
+    return confirm(mensaje);
 }
 
 async function confirmarCambioEstado(usuario, estadoActual) {

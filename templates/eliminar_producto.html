@@ -9,7 +9,7 @@
                 <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="Imagen de {{ p[1] }}">
                 <h4>{{ p[1] }}</h4>
                 <p>${{ "%.2f"|format(p[2]) }}</p>
-                <form method="post" action="{{ url_for('eliminar_producto') }}" onsubmit="return confirmarEliminacion(event, '{{ p[1] }}');">
+                <form method="post" action="{{ url_for('productos.eliminar_producto') }}" onsubmit="return confirmarEliminacion(event, '{{ p[1] }}');">
                     <input type="hidden" name="producto_id" value="{{ p[0] }}">
                     <button class="eliminar-btn" type="submit">Eliminar</button>
                 </form>

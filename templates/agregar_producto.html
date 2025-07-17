@@ -35,11 +35,11 @@
     <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
     <h3>Gestión</h3>
     <nav>
-        <a href="{{ url_for('index') }}">💰 Vender</a>
-        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
-        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-        <a href="{{ url_for('historial') }}">📋 Historial</a>
+        <a href="{{ url_for('main.index') }}">💰 Vender</a>
+        <a href="{{ url_for('productos.agregar_producto') }}" class="active">➕ Agregar</a>
+        <a href="{{ url_for('productos.editar_lista') }}">✏️ Editar</a>
+        <a href="{{ url_for('productos.eliminar_producto') }}">🗑️ Eliminar</a>
+        <a href="{{ url_for('main.historial') }}">📋 Historial</a>
     </nav>
 </div>
 <button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>

@@ -25,7 +25,7 @@
                 qrContainer.style.cssText = 'margin-top: 20px; text-align: center;';
                 qrContainer.innerHTML = `
                     <h4 style="font-size: 14px;">Escanéame 📱</h4>
-                    <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
+                    <img src="{{ url_for('main.qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
                     <p style="font-size: 12px; margin-top: 10px; color: #555;">
                         Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
                         Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
@@ -53,7 +53,7 @@
             <p>Total: $<span id="total">0.00</span></p>
             <button class="cart-btn" onclick="finalizarVenta()">Finalizar Venta</button>
             <hr>
-            <a href="{{ url_for('historial') }}">Ver Historial</a>
+            <a href="{{ url_for('main.historial') }}">Ver Historial</a>
         </div>
     </div>
 
