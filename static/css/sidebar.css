@@ -337,4 +337,58 @@ body.left-collapsed #showMenuBtn {
     background: var(--verde-agua, #1abc9c);
 }
 
+/* Botón flotante para mostrar el carrito cuando está colapsado */
+.show-cart-btn {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 50% 0 0 50%;
+    width: 40px;
+    height: 60px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2002;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.12);
+    display: none; /* Oculto por defecto */
+    animation: pulse 1.2s infinite;
+}
+
+/* Mostrar solo cuando la barra del carrito está colapsada */
+.sidebar.collapsed ~ .show-cart-btn,
+#cartSidebar.collapsed ~ .show-cart-btn {
+    display: block !important;
+}
+
+.show-cart-btn:hover {
+    background: var(--verde-agua, #1abc9c);
+}
+
+/* Asegurar que se muestre cuando el carrito está colapsado */
+#showCartBtn {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 50% 0 0 50%;
+    width: 40px;
+    height: 60px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2002;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.12);
+    display: none; /* Oculto por defecto */
+    animation: pulse 1.2s infinite;
+}
+
+#showCartBtn:hover {
+    background: var(--verde-agua, #1abc9c);
+}
+
 

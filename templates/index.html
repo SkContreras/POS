@@ -1,40 +1,63 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Punto de Venta</title>
-    <link rel="stylesheet" href="static/css/styles.css">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.jpeg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-</head>
-<body>
-    <!-- Barra decorativa superior -->
-    <div class="decor-bar"></div>
-    
-    <!-- Sidebar izquierda para gestión -->
-    <div class="sidebar left" id="gestionSidebar">
-        <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
-        <h3>Gestión</h3>
-        <nav>
-            <a href="{{ url_for('index') }}">💰 Vender</a>
-            <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
-            <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-            <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-            <a href="#" onclick="shutdownServer()" style="cursor:pointer;">🚪 Cerrar tienda</a>
-        </nav>
-        <div id="qr-container" style="margin-top: 20px; text-align: center;">
-            <h4 style="font-size: 14px;">Escanéame 📱</h4>
-            <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
-            <p style="font-size: 12px; margin-top: 10px; color: #555;">
-                Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
-                Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
-            </p>
+{% extends "base.html" %}
+
+{% block title %}Punto de Venta{% endblock %}
+
+{% block content %}
+    <!-- Modificar la sidebar existente para incluir QR y cerrar tienda -->
+    <script>
+        // Agregar contenido adicional a la sidebar del base template
+        document.addEventListener('DOMContentLoaded', function() {
+            const nav = document.querySelector('#gestionSidebar nav');
+            if (nav) {
+                // Agregar opción de cerrar tienda
+                const cerrarLink = document.createElement('a');
+                cerrarLink.href = '#';
+                cerrarLink.onclick = shutdownServer;
+                cerrarLink.style.cursor = 'pointer';
+                cerrarLink.innerHTML = '🚪 Cerrar tienda';
+                nav.appendChild(cerrarLink);
+                
+                // Agregar contenedor QR
+                const qrContainer = document.createElement('div');
+                qrContainer.id = 'qr-container';
+                qrContainer.style.cssText = 'margin-top: 20px; text-align: center;';
+                qrContainer.innerHTML = `
+                    <h4 style="font-size: 14px;">Escanéame 📱</h4>
+                    <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
+                    <p style="font-size: 12px; margin-top: 10px; color: #555;">
+                        Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
+                        Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
+                    </p>
+                `;
+                nav.parentElement.appendChild(qrContainer);
+            }
+        });
+    </script>
+
+    <!-- Contenedor para barra de búsqueda y carrito -->
+    <div class="search-cart-wrapper">
+        <!-- Barra de búsqueda de productos -->
+        <form class="search-bar">
+          <span class="search-icon">&#128269;</span>
+          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off">
+          <button type="button" id="clearSearch" class="clear-search-btn" title="Limpiar búsqueda">×</button>
+        </form>
+        
+        <!-- Sidebar derecha: Carrito de compras -->
+        <div class="sidebar" id="cartSidebar">
+            <button class="toggle-cart" onclick="toggleCarrito()">🛒</button>
+            <h3>Carrito</h3>
+            <ul id="carrito"></ul>
+            <p>Total: $<span id="total">0.00</span></p>
+            <button class="cart-btn" onclick="finalizarVenta()">Finalizar Venta</button>
+            <hr>
+            <a href="{{ url_for('historial') }}">Ver Historial</a>
         </div>
     </div>
-    <!-- Botón flotante para mostrar la barra de gestión cuando está colapsada -->
-    <button id="showMenuBtn" class="toggle-gestion-fixed" onclick="toggleGestion()">☰</button>
 
-    {% block content %}
+    <!-- Botón flotante para mostrar el carrito cuando está colapsado -->
+    <button id="showCartBtn" class="show-cart-btn" onclick="toggleCarrito()" style="display:none;">🛒</button>
+
     <!-- Menú de productos -->
     <div class="container">
         <div class="menu" id="menuProductos">
@@ -49,30 +72,6 @@
             {% endfor %}
         </div>
     </div>
-    {% endblock %}
-
-    <!-- Contenedor para barra de búsqueda y carrito -->
-    <div class="search-cart-wrapper">
-        <!-- Barra de búsqueda de productos -->
-        <form class="search-bar">
-          <span class="search-icon">&#128269;</span>
-          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off">
-          <button type="button" id="clearSearch" class="clear-search-btn" title="Limpiar búsqueda">×</button>
-        </form>
-        <!-- Sidebar derecha: Carrito de compras -->
-        <div class="sidebar" id="cartSidebar">
-            <button class="toggle-cart" onclick="toggleCart()">🛒</button>
-            <h3>Carrito</h3>
-            <ul id="carrito"></ul>
-            <p>Total: $<span id="total">0</span></p>
-            <button class="cart-btn" onclick="finalizarVenta()">Finalizar Venta</button>
-            <hr>
-            <a href="{{ url_for('historial') }}">Ver Historial</a>
-        </div>
-    </div>
-
-    <!-- Botón flotante para mostrar el carrito cuando está colapsado -->
-    <button id="showCartBtn" class="show-cart-btn" onclick="toggleCart()" style="display:none;">🛒</button>
 
     <!-- Título fijo de la aplicación -->
     <div id="tituloMegaMas">Mega-Mas</div>
@@ -86,108 +85,41 @@
         <button id="confirmCantidadBtn">Añadir al carrito</button>
       </div>
     </div>
+    
+    <!-- Contenedor para notificaciones toast -->
+    <div id="toast"></div>
+{% endblock %}
 
-    {% block scripts %}
+{% block scripts %}
+    <!-- Módulos específicos del sistema POS - orden de carga importante -->
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/carrito.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/celebracion.js') }}"></script>
+    <!-- Archivo principal que inicializa todo -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <!-- ...otros scripts específicos de esta página... -->
-    {% endblock %}
-
+    
     <script>
-        // Centra el header y gestiona clases del body según el estado de los sidebars
-        function updateHeaderCentering() {
-            const menu = document.getElementById('gestionSidebar');
-            const cart = document.getElementById('cartSidebar');
-            const topBar = document.getElementById('topBar');
-            if (!topBar) return;
-            if (!menu.classList.contains('collapsed') || !cart.classList.contains('collapsed')) {
-                topBar.classList.add('centered-header');
-            } else {
-                topBar.classList.remove('centered-header');
+        // Inicializar sidebars cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el manager de sidebars si está disponible
+            if (window.sidebarManager) {
+                window.sidebarManager.inicializarSidebars();
             }
-            // Añade clase al body si ambos sidebars están colapsados
-            if (menu.classList.contains('collapsed') && cart.classList.contains('collapsed')) {
-                document.body.classList.add('both-collapsed');
-            } else {
-                document.body.classList.remove('both-collapsed');
-            }
-        }
-
-        // Colapsa o expande el menú lateral izquierdo (solo en pantallas pequeñas)
-        function toggleMenu() {
-            if (window.innerWidth > 900) return;
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            menu.classList.toggle('collapsed');
-            showBtn.style.display = menu.classList.contains('collapsed') ? 'flex' : 'none';
-            updateHeaderCentering();
-        }
-
-        // Colapsa o expande el carrito (sidebar derecho)
-        function toggleCart() {
-            const cart = document.getElementById('cartSidebar');
-            const showCartBtn = document.getElementById('showCartBtn');
-            cart.classList.toggle('collapsed');
-            if (cart.classList.contains('collapsed')) {
-                showCartBtn.style.display = 'flex';
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open');
-            } else {
-                showCartBtn.style.display = 'none';
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed');
-            }
-            updateHeaderCentering();
-        }
-
-        // Colapsa o expande la barra de gestión (sidebar izquierdo)
-        function toggleGestion() {
-            const gestion = document.getElementById('gestionSidebar');
-            gestion.classList.toggle('collapsed');
-            // Añade o quita la clase al body para animar el título
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
-            }
-        }
-
-        // Estado inicial de los sidebars y botones flotantes al cargar la página
-        window.addEventListener('DOMContentLoaded', function() {
-            const gestion = document.getElementById('gestionSidebar');
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
-            }
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            const cart = document.getElementById('cartSidebar');
-            if (!menu.classList.contains('collapsed')) {
-                showBtn.style.display = 'none';
-            }
-            document.getElementById('showCartBtn').style.display = 'none';
-            if (cart.classList.contains('collapsed')) {
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open');
-            } else {
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed');
-            }
-            updateHeaderCentering();
+            
+            // El carrito ahora inicia abierto junto con el sidebar de gestión
+            // Esto se maneja desde sidebarManager.inicializarSidebars()
+            
+            // Asegurar que la función toggleCarrito esté disponible globalmente
+            window.toggleCarrito = function() {
+                if (window.sidebarManager) {
+                    window.sidebarManager.toggleCarrito();
+                }
+            };
         });
-
-        // Ajusta el menú lateral izquierdo al cambiar el tamaño de la ventana
-        window.addEventListener('resize', function() {
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            if (window.innerWidth > 900) {
-                menu.classList.remove('collapsed');
-                showBtn.style.display = 'none';
-            }
-        });
-
-
-        // Animación de rebote al hacer clic en un producto
+    
+        // Agregar animaciones de rebote a los productos
         document.querySelectorAll('.producto').forEach(producto => {
             producto.addEventListener('click', function() {
                 this.classList.remove('bounce'); // Reinicia si ya tiene la clase
@@ -197,21 +129,53 @@
         });
 
         // Función para cerrar el servidor
-        function shutdownServer() {
-            fetch('/shutdown', {
-            method: 'POST'
-            })
-            .then(response => response.text())
-            .then(data => {
-            alert(data);  // Mostrar mensaje de que se cerró
-            window.close(); // Intentar cerrar la pestaña (puede fallar en algunos navegadores)
-            })
-            .catch(error => {
-            alert('Error al cerrar el servidor');
-            console.error(error);
-            });
+        async function shutdownServer() {
+            let confirmar = false;
+            
+            if (window.confirmacionManager) {
+                confirmar = await window.confirmacionManager.crearModal('advertencia',
+                    'Cerrar servidor',
+                    '¿Estás seguro de que quieres cerrar el servidor POS?<br><small>Esto finalizará la aplicación completamente.</small>',
+                    {
+                        textoConfirmar: 'Sí, cerrar servidor',
+                        textoCancelar: 'Cancelar'
+                    }
+                );
+            } else {
+                confirmar = confirm('¿Estás seguro de que quieres cerrar el servidor POS?');
+            }
+            
+            if (!confirmar) return;
+            
+            try {
+                const response = await fetch('/shutdown', {
+                    method: 'POST'
+                });
+                const data = await response.text();
+                
+                if (window.confirmacionManager) {
+                    await window.confirmacionManager.mostrarExito(
+                        'Servidor cerrado correctamente.<br>Puedes cerrar esta ventana.'
+                    );
+                } else {
+                    alert(data);
+                }
+                
+                // Intentar cerrar la pestaña después de un pequeño delay
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error al cerrar el servidor:', error);
+                if (window.confirmacionManager) {
+                    await window.confirmacionManager.mostrarError(
+                        'Error al cerrar el servidor. Intenta nuevamente.'
+                    );
+                } else {
+                    alert('Error al cerrar el servidor');
+                }
+            }
         }
     </script>
-    <div id="toast">¡Venta guardada con éxito! 🎉</div>
-</body>
-</html>
+{% endblock %}

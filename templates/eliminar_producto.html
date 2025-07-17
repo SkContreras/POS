@@ -9,9 +9,9 @@
                 <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="Imagen de {{ p[1] }}">
                 <h4>{{ p[1] }}</h4>
                 <p>${{ "%.2f"|format(p[2]) }}</p>
-                <form method="post" action="{{ url_for('eliminar_producto') }}">
+                <form method="post" action="{{ url_for('eliminar_producto') }}" onsubmit="return confirmarEliminacion(event, '{{ p[1] }}');">
                     <input type="hidden" name="producto_id" value="{{ p[0] }}">
-                    <button class="eliminar-btn" type="submit" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">Eliminar</button>
+                    <button class="eliminar-btn" type="submit">Eliminar</button>
                 </form>
             </div>
             {% endfor %}
@@ -20,4 +20,26 @@
         {% endif %}
     </div>
     <div style="clear: both;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function confirmarEliminacion(event, nombreProducto) {
+    event.preventDefault(); // Prevenir el envío automático del formulario
+    
+    let confirmar = false;
+    if (window.confirmacionManager) {
+        confirmar = await window.confirmacionManager.confirmarEliminar(nombreProducto);
+    } else {
+        // Fallback a confirm nativo si no está disponible
+        confirmar = confirm(`¿Seguro que deseas eliminar "${nombreProducto}"?`);
+    }
+    
+    if (confirmar) {
+        event.target.submit(); // Enviar el formulario si se confirma
+    }
+    
+    return false;
+}
+</script>
 {% endblock %}

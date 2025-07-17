@@ -322,7 +322,7 @@ body.left-collapsed #tituloMegaMas {
 }
 
 /* Si la barra derecha está oculta, la barra de búsqueda se pega al borde derecho */
-body.sidebar-closed .search-bar,
+body.right-collapsed .search-bar,
 body.both-collapsed .search-bar {
     right: 1px;
 }
@@ -333,12 +333,12 @@ body.left-collapsed .container {
 }
 
 /* Si la barra derecha está colapsada, elimina el margen derecho */
-body.sidebar-closed .container {
+body.right-collapsed .container {
     margin-right: 0;
 }
 
 /* Si ambas barras están colapsadas, ocupa todo el ancho */
-body.left-collapsed.sidebar-closed .container {
+body.both-collapsed .container {
     margin-left: 0;
     margin-right: 0;
 }

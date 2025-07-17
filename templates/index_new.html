@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Punto de Venta{% endblock %}
+
+{% block content %}
+    <!-- Modificar la sidebar existente para incluir QR y cerrar tienda -->
+    <script>
+        // Agregar contenido adicional a la sidebar del base template
+        document.addEventListener('DOMContentLoaded', function() {
+            const nav = document.querySelector('#gestionSidebar nav');
+            if (nav) {
+                // Agregar opción de cerrar tienda
+                const cerrarLink = document.createElement('a');
+                cerrarLink.href = '#';
+                cerrarLink.onclick = shutdownServer;
+                cerrarLink.style.cursor = 'pointer';
+                cerrarLink.innerHTML = '🚪 Cerrar tienda';
+                nav.appendChild(cerrarLink);
+                
+                // Agregar contenedor QR
+                const qrContainer = document.createElement('div');
+                qrContainer.id = 'qr-container';
+                qrContainer.style.cssText = 'margin-top: 20px; text-align: center;';
+                qrContainer.innerHTML = `
+                    <h4 style="font-size: 14px;">Escanéame 📱</h4>
+                    <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
+                    <p style="font-size: 12px; margin-top: 10px; color: #555;">
+                        Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
+                        Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
+                    </p>
+                `;
+                nav.parentElement.appendChild(qrContainer);
+            }
+        });
+    </script>
+
+    <!-- Menú de productos -->
+    <div class="container">
+        <div class="menu" id="menuProductos">
+            {% for p in productos %}
+            <div class="producto"
+                 data-id="{{ p[0] }}"
+                 data-nombre="{{ p[1] }}"
+                 data-precio="{{ p[2] }}">
+                <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="{{ p[1] }}">
+                <p class="nombre-producto">{{ p[1] }} - ${{ "%.2f"|format(p[2]) }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Filtro de búsqueda -->
+        <div class="search-container">
+            <input type="text" id="buscador" placeholder="🔍 Buscar productos..." autocomplete="off">
+            <div class="search-icon">🔍</div>
+        </div>
+    </div>
+
+    <!-- Sidebar del carrito -->
+    <div class="sidebar" id="carritoSidebar">
+        <button class="close-carrito" onclick="cerrarCarrito()">✖</button>
+        <h3>🛒 Carrito</h3>
+        <ul id="carrito"></ul>
+        <p id="totalContainer">Total: $<span id="total">0.00</span></p>
+        <div class="cart-actions">
+            <button onclick="vaciarCarrito()" class="btn-vaciar">🗑️ Vaciar</button>
+            <button onclick="finalizarVenta()" class="btn-finalizar">💰 Finalizar</button>
+        </div>
+    </div>
+
+    <!-- Botón del carrito fijo -->
+    <button id="carrito-fixed-btn" onclick="mostrarCarrito()">
+        🛒 <span id="cart-count">0</span>
+    </button>
+
+    <!-- Barra inferior para historial -->
+    <div class="bottom-bar">
+        <a href="{{ url_for('historial') }}" id="historialBtn">📋 Historial de ventas</a>
+    </div>
+
+    <!-- Título fijo de la aplicación -->
+    <div id="tituloMegaMas">Mega-Mas</div>
+
+    <!-- Modal para elegir cantidad -->
+    <div id="cantidadModal" class="modal">
+      <div class="modal-content">
+        <span id="closeModal" class="close">&times;</span>
+        <h3 id="modalTitle"></h3>
+        <input type="number" id="cantidadInput" min="1" value="1" />
+        <button id="confirmCantidadBtn">Añadir al carrito</button>
+      </div>
+    </div>
+    
+    <!-- Contenedor para notificaciones toast -->
+    <div id="toast"></div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Módulos específicos del sistema POS - orden de carga importante -->
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/carrito.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/celebracion.js') }}"></script>
+    <!-- Archivo principal que inicializa todo -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Agregar animaciones de rebote a los productos
+        document.querySelectorAll('.producto').forEach(producto => {
+            producto.addEventListener('click', function() {
+                this.classList.remove('bounce'); // Reinicia si ya tiene la clase
+                void this.offsetWidth; // Fuerza reflow para reiniciar animación
+                this.classList.add('bounce');
+            });
+        });
+
+        // Función para cerrar el servidor
+        async function shutdownServer() {
+            let confirmar = false;
+            
+            if (window.confirmacionManager) {
+                confirmar = await window.confirmacionManager.crearModal('advertencia',
+                    'Cerrar servidor',
+                    '¿Estás seguro de que quieres cerrar el servidor POS?<br><small>Esto finalizará la aplicación completamente.</small>',
+                    {
+                        textoConfirmar: 'Sí, cerrar servidor',
+                        textoCancelar: 'Cancelar'
+                    }
+                );
+            } else {
+                confirmar = confirm('¿Estás seguro de que quieres cerrar el servidor POS?');
+            }
+            
+            if (!confirmar) return;
+            
+            try {
+                const response = await fetch('/shutdown', {
+                    method: 'POST'
+                });
+                const data = await response.text();
+                
+                if (window.confirmacionManager) {
+                    await window.confirmacionManager.mostrarExito(
+                        'Servidor cerrado correctamente.<br>Puedes cerrar esta ventana.'
+                    );
+                } else {
+                    alert(data);
+                }
+                
+                // Intentar cerrar la pestaña después de un pequeño delay
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error al cerrar el servidor:', error);
+                if (window.confirmacionManager) {
+                    await window.confirmacionManager.mostrarError(
+                        'Error al cerrar el servidor. Intenta nuevamente.'
+                    );
+                } else {
+                    alert('Error al cerrar el servidor');
+                }
+            }
+        }
+    </script>
+{% endblock %}

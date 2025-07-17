@@ -1,0 +1,539 @@
+/* --- Barra lateral derecha mejorada (igual que la izquierda) --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 250px;              /* Unificado con la izquierda */
+    height: 100vh;
+    background: linear-gradient(180deg, var(--azul-mar, #2980b9) 80%, var(--verde-agua, #1abc9c) 100%);
+    color: #fff;
+    padding-top: 60px;         /* Unificado con la izquierda */
+    z-index: 300;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: -4px 0 24px 0 var(--sombra-mar, rgba(44,62,80,0.08));
+    border-left: 2px solid var(--verde-agua, #1abc9c);
+    backdrop-filter: blur(6px);
+}
+
+.sidebar .toggle-cart {
+    background: rgba(255,255,255,0.10);
+    color: var(--verde-hielo, #b2f1e5);
+    border: none;
+    font-size: 2.1rem;
+    margin-bottom: 28px;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 8px 16px;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.sidebar .toggle-cart:hover {
+    background: var(--verde-agua);
+    color: #fff;
+}
+
+.sidebar h3 {
+    margin-bottom: 18px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--verde-hielo, #b2f1e5);
+}
+
+.sidebar ul#carrito {
+    width: 100%;
+    padding: 0 0 0 0;
+    margin: 0 0 18px 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.sidebar ul#carrito li {
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.18s;
+    border-radius: 8px;
+    margin: 0 8px;
+    line-height: 1.3;
+}
+
+.sidebar ul#carrito li:hover {
+    background: var(--verde-agua);
+    color: var(--azul-profundo);
+}
+
+.sidebar p {
+    margin: 10px 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--coral, #ff7f50);
+    letter-spacing: 0.2px;
+}
+
+.sidebar .cart-btn {
+    background-color: var(--coral, #ff7f50);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 13px 0;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 10px 0 8px 0;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.07);
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.5px;
+}
+.sidebar .cart-btn:hover {
+    background-color: var(--naranja-marisco, #ffb347);
+    transform: translateY(-2px) scale(1.03);
+}
+
+.sidebar hr {
+    width: 90%;
+    border: none;
+    border-top: 1.5px solid rgba(255,255,255,0.10);
+    margin: 18px 0 10px 0;
+}
+
+.sidebar a {
+    display: block;
+    background: var(--azul-mar, #2980b9);
+    color: #fff !important;
+    border-radius: 8px;
+    padding: 12px 0;
+    width: 90%;               /* Unificado con la izquierda */
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 8px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+}
+.sidebar a:hover {
+    background: var(--verde-agua, #1abc9c);
+    color: var(--azul-profundo, #22313F) !important;
+}
+
+/* Sidebar izquierda */
+.sidebar.left {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: 2px 0 8px rgba(44,62,80,0.08);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 60px;
+    padding-bottom: 20px;
+    transition: transform 0.3s;
+    transform: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar.left.collapsed {
+    transform: translateX(-100%);
+}
+
+.sidebar.left .toggle-gestion {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.sidebar.left h3 {
+    margin-bottom: 20px;
+    margin-top: 10px;
+    color: var(--azul-mar, #2980b9);
+    font-size: 1.3rem;
+}
+
+.sidebar.left nav {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sidebar.left nav a {
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border-radius: 8px;
+    padding: 12px 0;
+    width: 90%;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+}
+.sidebar.left nav a:hover {
+    background: var(--verde-agua, #1abc9c);
+    color: var(--azul-profundo, #22313F);
+}
+
+/* Colapso unificado */
+.sidebar.collapsed {
+    transform: translateX(100%);
+}
+
+.sidebar,
+.sidebar.left {
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08); /* Sombra unificada */
+    border-radius: 0 12px 12px 0; /* Bordes redondeados solo en el lado visible */
+}
+
+/* Si quieres que la derecha tenga el borde opuesto: */
+.sidebar {
+    border-radius: 12px 0 0 12px;
+    /* ...otros estilos... */
+}
+.sidebar.left {
+    border-radius: 0 12px 12px 0;
+    /* ...otros estilos... */
+}
+
+/* Unifica box-shadow y border-radius en los enlaces */
+.sidebar a,
+.sidebar.left nav a {
+    box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+    border-radius: 8px;
+}
+
+/* Botón de toggle para la barra izquierda, centrado verticalmente y fuera de la barra */
+.toggle-gestion-fixed {
+    position: fixed;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    background: var(--azul-mar, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 0 50% 50% 0;
+    width: 40px;
+    height: 60px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 2002;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.12);
+    display: none; /* Oculto por defecto */
+}
+
+/* Mostrar solo cuando la barra izquierda está colapsada */
+.sidebar.left.collapsed ~ .toggle-gestion-fixed {
+    display: block;
+}
+
+/* Ocultar el botón original dentro de la barra cuando está colapsada */
+.sidebar.left.collapsed .toggle-gestion {
+    display: none;
+}
+
+body.left-collapsed #showMenuBtn {
+    display: block !important;
+}
+
+/* Animación de pulso */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.5);
+        transform: scale(1);
+    }
+    70% {
+        box-shadow: 0 0 0 12px rgba(41, 128, 185, 0);
+        transform: scale(1.08);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(41, 128, 185, 0);
+        transform: scale(1);
+    }
+}
+
+/* Aplica el pulso al botón flotante */
+.toggle-gestion-fixed.pulse,
+#showMenuBtn.pulse {
+    animation: pulse 1.2s infinite;
+}
+
+/* Estilos para el contenedor del QR en la barra lateral */
+#qr-container {
+    margin-top: 20px;
+    padding: 15px;
+    text-align: center;
+    background: rgba(62, 198, 193, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(62, 198, 193, 0.2);
+    width: 90%;
+    box-sizing: border-box;
+}
+
+#qr-container h4 {
+    font-size: 14px;
+    margin: 0 0 10px 0;
+    color: var(--azul-mar, #2980b9);
+    font-weight: 600;
+}
+
+#qr-container img {
+    width: 120px;
+    height: 120px;
+    margin: 8px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#qr-container p {
+    font-size: 12px;
+    margin: 10px 0 0 0;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Asegurar que el scroll sea suave */
+.sidebar.left::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar.left::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px;
+}
+
+.sidebar.left::-webkit-scrollbar-thumb {
+    background: var(--azul-mar, #2980b9);
+    border-radius: 3px;
+}
+
+.sidebar.left::-webkit-scrollbar-thumb:hover {
+    background: var(--verde-agua, #1abc9c);
+}
+
+/* === ESTILOS PARA EL CARRITO === */
+
+/* Sidebar del carrito (derecha) - Estados de visibilidad */
+.sidebar:not(.left) {
+    transform: translateX(100%); /* Oculto por defecto */
+}
+
+.sidebar:not(.left).show {
+    transform: translateX(0); /* Visible cuando tiene clase 'show' */
+}
+
+/* Botón fijo del carrito */
+#carrito-fixed-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--coral, #ff7f50), var(--naranja-marisco, #ffb347));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 127, 80, 0.4);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    min-width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#carrito-fixed-btn:hover {
+    background: linear-gradient(135deg, var(--naranja-marisco, #ffb347), var(--coral, #ff7f50));
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 127, 80, 0.6);
+}
+
+#carrito-fixed-btn #cart-count {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--coral, #ff7f50);
+    border-radius: 50%;
+    padding: 2px 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#carrito-fixed-btn #cart-count.bounce {
+    animation: bounceCount 0.6s ease;
+}
+
+@keyframes bounceCount {
+    0%, 20%, 53%, 80%, 100% {
+        transform: scale(1);
+    }
+    40%, 43% {
+        transform: scale(1.3);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    90% {
+        transform: scale(1.05);
+    }
+}
+
+/* Botón cerrar carrito */
+.sidebar .close-carrito {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar .close-carrito:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Botones de acciones del carrito */
+.cart-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 90%;
+    margin-top: 10px;
+}
+
+.btn-vaciar, .btn-finalizar {
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-vaciar {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-vaciar:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-finalizar {
+    background: var(--verde-agua, #1abc9c);
+    color: white;
+}
+
+.btn-finalizar:hover {
+    background: #16a085;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(26, 188, 156, 0.4);
+}
+
+/* Botones eliminar en items del carrito */
+.carrito-eliminar-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.carrito-eliminar-btn:hover {
+    background: rgba(255, 127, 80, 0.8);
+    transform: scale(1.1);
+}
+
+/* Contenedor del total */
+#totalContainer {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 15px 8px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#totalContainer #total {
+    color: var(--verde-hielo, #b2f1e5);
+    font-size: 1.3rem;
+}
+
+/* Estado cuando el carrito está abierto */
+body.carrito-abierto {
+    overflow: hidden;
+}
+
+/* Overlay cuando el carrito está abierto (opcional) */
+body.carrito-abierto::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 250;
+    opacity: 0;
+    animation: fadeInOverlay 0.3s ease forwards;
+}
+
+@keyframes fadeInOverlay {
+    to {
+        opacity: 1;
+    }
+}
+
+

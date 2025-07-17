@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="form-page-container">
-    <form method="post" enctype="multipart/form-data" action="{{ url_for('editar_producto') }}?producto_id={{ producto.id }}" class="form">
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('editar_producto') }}?producto_id={{ producto.id }}" class="form" onsubmit="return confirmarEdicion(event, '{{ producto.nombre }}');">
         <input type="hidden" name="producto_id" value="{{ producto.id }}">
 
         <div class="form-group">
@@ -49,6 +49,24 @@
             // Si no hay archivo, vuelve a mostrar la imagen original
             preview.src = "{{ url_for('static', filename='img/' + producto.imagen_url) }}";
         }
+    }
+    
+    async function confirmarEdicion(event, nombreProducto) {
+        event.preventDefault(); // Prevenir el envío automático del formulario
+        
+        let confirmar = false;
+        if (window.confirmacionManager) {
+            confirmar = await window.confirmacionManager.confirmarEdicion(nombreProducto);
+        } else {
+            // Fallback a confirm nativo si no está disponible
+            confirmar = confirm(`¿Guardar los cambios realizados en "${nombreProducto}"?`);
+        }
+        
+        if (confirmar) {
+            event.target.submit(); // Enviar el formulario si se confirma
+        }
+        
+        return false;
     }
 </script>
 {% endblock %}

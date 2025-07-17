@@ -11,7 +11,7 @@
 <body>
     <div class="decor-bar"></div>
     <!-- Sidebar izquierda para gestión -->
-    <div class="sidebar left collapsed" id="gestionSidebar">
+    <div class="sidebar left" id="gestionSidebar">
         <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
         <h3>Gestión</h3>
         <nav>
@@ -23,31 +23,45 @@
     </div>
     <button class="toggle-gestion-fixed pulse" onclick="toggleGestion()">☰</button>
     {% block content %}{% endblock %}
+    
+    <!-- Scripts base del sistema POS - ORDEN CRÍTICO -->
+    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/confirmacion.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    
     <script>
-        function toggleGestion() {
-            const gestion = document.getElementById('gestionSidebar');
-            gestion.classList.toggle('collapsed');
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
+        // Inicializar sidebars cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el manager de sidebars si está disponible
+            if (window.sidebarManager) {
+                window.sidebarManager.inicializarSidebars();
             }
-
-            // --- NUEVO: Actualiza las clases de body para las columnas ---
-            const cart = document.getElementById('cartSidebar');
-            const leftClosed = gestion.classList.contains('collapsed');
-            const rightClosed = cart && cart.classList.contains('collapsed');
-            if (leftClosed && rightClosed) {
-                document.body.classList.add('both-collapsed');
-                document.body.classList.remove('sidebar-open', 'sidebar-closed');
-            } else if (leftClosed || rightClosed) {
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open', 'both-collapsed');
+        });
+        
+        // Función de compatibilidad para el botón del base template
+        function toggleGestion() {
+            if (window.sidebarManager) {
+                window.sidebarManager.toggleGestion();
             } else {
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed', 'both-collapsed');
+                // Fallback para compatibilidad
+                const gestion = document.getElementById('gestionSidebar');
+                const toggleBtn = document.querySelector('.toggle-gestion-fixed');
+                if (gestion) {
+                    gestion.classList.toggle('collapsed');
+                    if (gestion.classList.contains('collapsed')) {
+                        document.body.classList.add('left-collapsed');
+                        if (toggleBtn) toggleBtn.style.display = 'block';
+                    } else {
+                        document.body.classList.remove('left-collapsed');
+                        if (toggleBtn) toggleBtn.style.display = 'none';
+                    }
+                }
             }
         }
+        
+        // Asegurar que la función esté disponible globalmente
+        window.toggleGestion = toggleGestion;
     </script>
     {% block scripts %}{% endblock %}
 </body>

@@ -69,20 +69,22 @@ def abrir_navegador_con_retraso():
     abrir_navegador()
 
 def abrir_navegador():
-    hostname = socket.gethostname()
-    ip_local = socket.gethostbyname(hostname)
-    port = 5000
-    webbrowser.open(f"http://{ip_local}:{port}/", new=1)  # new=1 para usar pestaña existente si hay una
+    """Abre el navegador web con la URL correcta del servidor"""
+    ip_local = obtener_ip_local()
+    port = int(os.environ.get('PORT', 5000))
+    url = f"http://{ip_local}:{port}/"
+    print(f"Abriendo navegador en: {url}")
+    webbrowser.open(url, new=1)  # new=1 para usar pestaña existente si hay una
 
 @app.route('/qr_code')
 def qr_code():
+    """Genera un código QR para acceder al sistema POS"""
     # Usar el host de la aplicación en producción o IP local en desarrollo
     if 'herokuapp.com' in request.host or 'pages.dev' in request.host:
         url = f"https://{request.host}"
     else:
-        hostname = socket.gethostname()
-        ip_local = socket.gethostbyname(hostname)
-        port = 5000
+        ip_local = obtener_ip_local()
+        port = int(os.environ.get('PORT', 5000))
         url = f"http://{ip_local}:{port}"
 
     # Crear QR
@@ -254,10 +256,29 @@ def finalizar_venta():
     conn.close()
     return jsonify({"status": "ok"})
 
+def obtener_ip_local():
+    """Obtiene la IP local del sistema de forma automática"""
+    try:
+        # Crear un socket temporal para obtener la IP local
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_local = s.getsockname()[0]
+        s.close()
+        return ip_local
+    except Exception:
+        # Fallback a localhost si no se puede obtener la IP
+        return "127.0.0.1"
+
 if __name__ == "__main__":
     init_db()
     # Variable para controlar si ya se abrió el navegador
     navegador_abierto = False
+    
+    # Obtener IP local automáticamente
+    host_ip = obtener_ip_local()
+    port = int(os.environ.get('PORT', 5000))
+    
+    print(f"Iniciando servidor POS en http://{host_ip}:{port}")
     
     # Solo abrir navegador en desarrollo local y una sola vez
     if os.environ.get('FLASK_ENV') != 'production' and not navegador_abierto:
@@ -266,6 +287,6 @@ if __name__ == "__main__":
         thread.daemon = True  # Thread se cierra cuando el programa principal termine
         thread.start()
     
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host="192.168.1.105", port=port, use_reloader=False)
+    # Usar 0.0.0.0 para que sea accesible desde cualquier interfaz de red
+    app.run(debug=False, host="0.0.0.0", port=port, use_reloader=False)
 

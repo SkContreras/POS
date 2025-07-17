@@ -106,7 +106,7 @@
         border-radius: 10px;
         height: 40px;
     }
-    body.sidebar-closed .search-bar,
+    body.right-collapsed .search-bar,
     body.both-collapsed .search-bar {
         right: 8px;
         width: calc(100vw - 16px);
