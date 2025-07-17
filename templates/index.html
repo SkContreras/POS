@@ -9,13 +9,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             const nav = document.querySelector('#gestionSidebar nav');
             if (nav) {
-                // Agregar opción de cerrar tienda
+                {% if session.rol == 'administrador' %}
+                // Agregar opción de cerrar tienda (solo para administradores)
                 const cerrarLink = document.createElement('a');
                 cerrarLink.href = '#';
                 cerrarLink.onclick = shutdownServer;
                 cerrarLink.style.cursor = 'pointer';
                 cerrarLink.innerHTML = '🚪 Cerrar tienda';
                 nav.appendChild(cerrarLink);
+                {% endif %}
                 
                 // Agregar contenedor QR
                 const qrContainer = document.createElement('div');
@@ -132,6 +134,16 @@
         async function shutdownServer() {
             let confirmar = false;
             
+            // Verificar si es administrador
+            {% if session.rol != 'administrador' %}
+            if (window.toastManager) {
+                window.toastManager.mostrar('Solo administradores pueden cerrar el servidor', 'error');
+            } else {
+                alert('Solo administradores pueden cerrar el servidor');
+            }
+            return;
+            {% endif %}
+            
             if (window.confirmacionManager) {
                 confirmar = await window.confirmacionManager.crearModal('advertencia',
                     'Cerrar servidor',
@@ -147,24 +159,40 @@
             
             if (!confirmar) return;
             
+            // Verificar contraseña del administrador
+            try {
+                await window.verificarAdmin('Confirma tu contraseña para cerrar el servidor:');
+            } catch (error) {
+                return; // Usuario canceló o error en verificación
+            }
+            
             try {
                 const response = await fetch('/shutdown', {
                     method: 'POST'
                 });
-                const data = await response.text();
                 
-                if (window.confirmacionManager) {
-                    await window.confirmacionManager.mostrarExito(
-                        'Servidor cerrado correctamente.<br>Puedes cerrar esta ventana.'
-                    );
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (window.confirmacionManager) {
+                        await window.confirmacionManager.mostrarExito(
+                            'Servidor cerrado correctamente.<br>Redirigiendo al login...'
+                        );
+                    } else {
+                        alert('Servidor cerrado correctamente. Redirigiendo al login...');
+                    }
+                    
+                    // Redirigir al login después de un pequeño delay
+                    setTimeout(() => {
+                        if (data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    }, 1500);
                 } else {
-                    alert(data);
+                    throw new Error('Error en la respuesta del servidor');
                 }
-                
-                // Intentar cerrar la pestaña después de un pequeño delay
-                setTimeout(() => {
-                    window.close();
-                }, 2000);
                 
             } catch (error) {
                 console.error('Error al cerrar el servidor:', error);

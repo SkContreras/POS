@@ -35,8 +35,15 @@ async function confirmarEliminacion(event, nombreProducto) {
         confirmar = confirm(`¿Seguro que deseas eliminar "${nombreProducto}"?`);
     }
     
-    if (confirmar) {
-        event.target.submit(); // Enviar el formulario si se confirma
+    if (!confirmar) return false;
+    
+    // Verificar contraseña del administrador antes de eliminar
+    try {
+        await window.verificarAdmin(`Confirma tu contraseña para eliminar "${nombreProducto}":`);
+        event.target.submit(); // Enviar el formulario si se confirma y verifica
+    } catch (error) {
+        // Usuario canceló o error en verificación
+        console.log('Eliminación cancelada');
     }
     
     return false;

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Gestionar Usuarios{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px; margin: 20px auto; padding: 20px;">
+    <h2 style="margin-bottom: 30px; color: #333; text-align: center;">
+        👥 Gestión de Usuarios
+    </h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 12px; border-radius: 6px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulario para crear nuevo usuario -->
+    <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 25px;">
+        <h3 style="margin-bottom: 20px; color: #333;">➕ Crear Nuevo Usuario</h3>
+        
+        <form method="POST" action="{{ url_for('crear_usuario') }}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end;">
+            <div class="form-group">
+                <label for="usuario" style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre de Usuario:</label>
+                <input type="text" id="usuario" name="usuario" required 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+            </div>
+            
+            <div class="form-group">
+                <label for="password" style="display: block; margin-bottom: 5px; font-weight: bold;">Contraseña:</label>
+                <input type="password" id="password" name="password" required 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+            </div>
+            
+            <div class="form-group">
+                <label for="rol" style="display: block; margin-bottom: 5px; font-weight: bold;">Rol:</label>
+                <select id="rol" name="rol" required 
+                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+                    <option value="cajero">👨‍💻 Cajero</option>
+                    <option value="administrador">👨‍💼 Administrador</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="nombre_completo" style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre Completo:</label>
+                <input type="text" id="nombre_completo" name="nombre_completo" required 
+                       style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px;">
+            </div>
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <button type="submit" onclick="return confirmarCreacion()" 
+                        style="background: #28a745; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    ➕ Crear Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de usuarios existentes -->
+    <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 25px;">
+        <h3 style="margin-bottom: 20px; color: #333;">📋 Usuarios Existentes</h3>
+        
+        {% if usuarios %}
+        <div class="table-responsive">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 12px; text-align: left; color: #495057;">Usuario</th>
+                        <th style="padding: 12px; text-align: left; color: #495057;">Nombre Completo</th>
+                        <th style="padding: 12px; text-align: center; color: #495057;">Rol</th>
+                        <th style="padding: 12px; text-align: center; color: #495057;">Estado</th>
+                        <th style="padding: 12px; text-align: center; color: #495057;">Fecha Creación</th>
+                        <th style="padding: 12px; text-align: center; color: #495057;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in usuarios %}
+                    <tr style="border-bottom: 1px solid #dee2e6; {% if not user[4] %}opacity: 0.6;{% endif %}">
+                        <td style="padding: 12px; font-weight: bold;">
+                            {% if user[2] == 'administrador' %}👨‍💼{% else %}👨‍💻{% endif %} {{ user[1] }}
+                        </td>
+                        <td style="padding: 12px;">{{ user[3] }}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; 
+                                         {% if user[2] == 'administrador' %}background: #dc3545; color: white;{% else %}background: #17a2b8; color: white;{% endif %}">
+                                {{ user[2]|title }}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            <span style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+                                         {% if user[4] %}background: #28a745; color: white;{% else %}background: #6c757d; color: white;{% endif %}">
+                                {% if user[4] %}✅ Activo{% else %}❌ Inactivo{% endif %}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; text-align: center; font-size: 12px; color: #6c757d;">
+                            {{ user[5][:10] if user[5] else 'N/A' }}
+                        </td>
+                        <td style="padding: 12px; text-align: center;">
+                            {% if user[0] != session.user_id %}
+                            <a href="{{ url_for('cambiar_estado_usuario', user_id=user[0]) }}" 
+                               onclick="return confirmarCambioEstado('{{ user[1] }}', {{ user[4] }})"
+                               style="padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;
+                                      {% if user[4] %}background: #ffc107; color: #212529;{% else %}background: #28a745; color: white;{% endif %}">
+                                {% if user[4] %}🔒 Desactivar{% else %}🔓 Activar{% endif %}
+                            </a>
+                            {% else %}
+                            <span style="color: #6c757d; font-size: 12px;">Tu cuenta</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="text-align: center; color: #6c757d; padding: 20px;">No hay usuarios para mostrar.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    form {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .form-group:last-child {
+        grid-column: span 1 !important;
+    }
+    
+    table {
+        font-size: 12px;
+    }
+    
+    th, td {
+        padding: 8px !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmarCreacion() {
+    const nombre = document.getElementById('nombre_completo').value;
+    const usuario = document.getElementById('usuario').value;
+    const rol = document.getElementById('rol').value;
+    
+    return confirm(`¿Crear usuario "${nombre}" con rol de ${rol}?`);
+}
+
+async function confirmarCambioEstado(usuario, estadoActual) {
+    const accion = estadoActual ? 'desactivar' : 'activar';
+    let confirmar = false;
+    
+    if (window.confirmacionManager) {
+        confirmar = await window.confirmacionManager.crearModal('advertencia',
+            `${accion.charAt(0).toUpperCase() + accion.slice(1)} Usuario`,
+            `¿Estás seguro de que quieres ${accion} al usuario "${usuario}"?`,
+            {
+                textoConfirmar: `Sí, ${accion}`,
+                textoCancelar: 'Cancelar'
+            }
+        );
+    } else {
+        confirmar = confirm(`¿Estás seguro de que quieres ${accion} al usuario "${usuario}"?`);
+    }
+    
+    if (!confirmar) return false;
+    
+    // Verificar contraseña del administrador
+    try {
+        await window.verificarAdmin(`Confirma tu contraseña para ${accion} al usuario "${usuario}":`);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+</script>
+{% endblock %}
