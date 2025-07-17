@@ -4,15 +4,15 @@ import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import uuid
-import qrcode
 import socket
 import io
 import webbrowser
 import time
 import threading
+import qrcode
 
 app = Flask(__name__)
-app.secret_key = '14/Oct/14'
+app.secret_key = os.environ.get('SECRET_KEY', '14/Oct/14')
 DB_NAME = 'database.db'
 UPLOAD_FOLDER = 'static/img'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -72,15 +72,18 @@ def abrir_navegador():
     hostname = socket.gethostname()
     ip_local = socket.gethostbyname(hostname)
     port = 5000
-    webbrowser.open(f"http://{ip_local}:{port}/", new=2)
+    webbrowser.open(f"http://{ip_local}:{port}/", new=1)  # new=1 para usar pestaña existente si hay una
 
 @app.route('/qr_code')
 def qr_code():
-    # Obtener IP local automáticamente
-    hostname = socket.gethostname()
-    ip_local = socket.gethostbyname(hostname)
-    port = 5000
-    url = f"http://{ip_local}:{port}"
+    # Usar el host de la aplicación en producción o IP local en desarrollo
+    if 'herokuapp.com' in request.host or 'pages.dev' in request.host:
+        url = f"https://{request.host}"
+    else:
+        hostname = socket.gethostname()
+        ip_local = socket.gethostbyname(hostname)
+        port = 5000
+        url = f"http://{ip_local}:{port}"
 
     # Crear QR
     qr = qrcode.make(url)
@@ -253,7 +256,16 @@ def finalizar_venta():
 
 if __name__ == "__main__":
     init_db()
-    tread = threading.Thread(target=abrir_navegador_con_retraso)
-    tread.start()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # Variable para controlar si ya se abrió el navegador
+    navegador_abierto = False
+    
+    # Solo abrir navegador en desarrollo local y una sola vez
+    if os.environ.get('FLASK_ENV') != 'production' and not navegador_abierto:
+        navegador_abierto = True
+        thread = threading.Thread(target=abrir_navegador_con_retraso)
+        thread.daemon = True  # Thread se cierra cuando el programa principal termine
+        thread.start()
+    
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host="192.168.1.105", port=port, use_reloader=False)
 

@@ -56,7 +56,8 @@
         <!-- Barra de búsqueda de productos -->
         <form class="search-bar">
           <span class="search-icon">&#128269;</span>
-          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar">
+          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off">
+          <button type="button" id="clearSearch" class="clear-search-btn" title="Limpiar búsqueda">×</button>
         </form>
         <!-- Sidebar derecha: Carrito de compras -->
         <div class="sidebar" id="cartSidebar">
@@ -183,25 +184,6 @@
                 menu.classList.remove('collapsed');
                 showBtn.style.display = 'none';
             }
-        });
-
-        // Filtra productos en tiempo real según la búsqueda
-        document.addEventListener("DOMContentLoaded", function () {
-            const input = document.getElementById("busqueda");
-            const productos = document.querySelectorAll(".producto");
-
-            input.addEventListener("keyup", function () {
-                const filtro = input.value.toLowerCase();
-
-                productos.forEach(function (producto) {
-                    const nombre = producto.dataset.nombre.toLowerCase();
-                    if (nombre.includes(filtro)) {
-                        producto.classList.remove("oculto");
-                    } else {
-                        producto.classList.add("oculto");
-                    }
-                });
-            });
         });
 
 

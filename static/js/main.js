@@ -49,12 +49,20 @@ function actualizarCarrito() {
         const subtotal = p.precio * p.cantidad;
         total += subtotal;
         const li = document.createElement("li");
-        li.textContent = `${p.nombre} x${p.cantidad} - $${subtotal.toFixed(2)}`;
+        
+        // Crear contenedor para el texto del producto
+        const textoProducto = document.createElement("span");
+        textoProducto.className = "producto-texto";
+        textoProducto.textContent = `${p.nombre} x${p.cantidad} - $${subtotal.toFixed(2)}`;
+        
         // Botón eliminar
         const btn = document.createElement("button");
-        btn.textContent = "Eliminar";
-        btn.className = "carrito-eliminar-btn"; // <-- agrega la clase aquí
+        btn.innerHTML = "🗑️";
+        btn.className = "carrito-eliminar-btn";
+        btn.title = "Eliminar del carrito";
         btn.onclick = () => eliminarDelCarrito(idx);
+        
+        li.appendChild(textoProducto);
         li.appendChild(btn);
         lista.appendChild(li);
     });
@@ -143,4 +151,150 @@ document.querySelectorAll('.producto').forEach(producto => {
         const precio = this.dataset.precio;
         agregarAlCarrito(id, nombre, precio);
     });
+});
+
+// Función de búsqueda de productos en tiempo real
+function inicializarBusqueda() {
+    const input = document.getElementById("busqueda");
+    const clearBtn = document.getElementById("clearSearch");
+    const productos = document.querySelectorAll(".producto");
+    const menuContainer = document.getElementById("menuProductos");
+
+    if (!input || productos.length === 0) {
+        console.warn("No se encontró el input de búsqueda o productos");
+        return;
+    }
+
+    // Guardar el orden original de los productos
+    const ordenOriginal = Array.from(productos);
+
+    // Eventos de búsqueda
+    input.addEventListener("input", function () {
+        filtrarProductos(this.value, productos, menuContainer, ordenOriginal);
+        toggleClearButton(this.value, clearBtn);
+    });
+
+    input.addEventListener("keyup", function () {
+        filtrarProductos(this.value, productos, menuContainer, ordenOriginal);
+        toggleClearButton(this.value, clearBtn);
+    });
+
+    // Limpiar búsqueda al presionar Escape
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            limpiarBusqueda(input, clearBtn, productos, menuContainer, ordenOriginal);
+        }
+    });
+
+    // Botón para limpiar búsqueda
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            limpiarBusqueda(input, clearBtn, productos, menuContainer, ordenOriginal);
+        });
+    }
+
+    // Estado inicial
+    toggleClearButton("", clearBtn);
+}
+
+// Función para limpiar búsqueda
+function limpiarBusqueda(input, clearBtn, productos, menuContainer, ordenOriginal) {
+    input.value = "";
+    
+    // Restaurar el orden original de los productos
+    if (menuContainer && ordenOriginal) {
+        ordenOriginal.forEach(producto => {
+            menuContainer.appendChild(producto);
+        });
+    }
+    
+    filtrarProductos("", productos, menuContainer, ordenOriginal);
+    toggleClearButton("", clearBtn);
+    input.focus();
+}
+
+// Función para mostrar/ocultar botón de limpiar
+function toggleClearButton(valor, clearBtn) {
+    if (clearBtn) {
+        clearBtn.style.display = valor.trim() ? "flex" : "none";
+    }
+}
+
+// Función para filtrar productos
+function filtrarProductos(termino, productos, menuContainer, ordenOriginal) {
+    const filtro = termino.toLowerCase().trim();
+    let productosVisibles = 0;
+    
+    // Crear arrays para productos coincidentes y no coincidentes
+    const productosCoincidentes = [];
+    const productosNoCoincidentes = [];
+
+    productos.forEach(function (producto) {
+        const nombre = producto.dataset.nombre.toLowerCase();
+        const esVisible = filtro === "" || nombre.includes(filtro);
+        
+        if (esVisible) {
+            producto.classList.remove("oculto");
+            productosVisibles++;
+            productosCoincidentes.push(producto);
+        } else {
+            producto.classList.add("oculto");
+            productosNoCoincidentes.push(producto);
+        }
+    });
+
+    // Reorganizar productos solo si hay un filtro activo
+    if (filtro !== "" && menuContainer) {
+        // Primero agregar los productos coincidentes
+        productosCoincidentes.forEach(producto => {
+            menuContainer.appendChild(producto);
+        });
+        
+        // Luego agregar los productos no coincidentes (ocultos)
+        productosNoCoincidentes.forEach(producto => {
+            menuContainer.appendChild(producto);
+        });
+    } else if (filtro === "" && menuContainer && ordenOriginal) {
+        // Si no hay filtro, restaurar el orden original
+        ordenOriginal.forEach(producto => {
+            menuContainer.appendChild(producto);
+        });
+    }
+
+    // Mostrar mensaje si no hay resultados
+    mostrarEstadoBusqueda(productosVisibles, filtro);
+}
+
+// Función para mostrar estado de búsqueda
+function mostrarEstadoBusqueda(productosVisibles, termino) {
+    let mensajeContainer = document.getElementById("mensajeBusqueda");
+    
+    // Crear el contenedor del mensaje si no existe
+    if (!mensajeContainer) {
+        mensajeContainer = document.createElement("div");
+        mensajeContainer.id = "mensajeBusqueda";
+        mensajeContainer.className = "mensaje-busqueda";
+        const menu = document.getElementById("menuProductos");
+        if (menu) {
+            menu.parentNode.insertBefore(mensajeContainer, menu.nextSibling);
+        }
+    }
+
+    if (termino && productosVisibles === 0) {
+        mensajeContainer.innerHTML = `
+            <div class="no-resultados">
+                <span class="icono">🔍</span>
+                <p>No se encontraron productos para "<strong>${termino}</strong>"</p>
+                <small>Intenta con otro término de búsqueda</small>
+            </div>
+        `;
+        mensajeContainer.style.display = "block";
+    } else {
+        mensajeContainer.style.display = "none";
+    }
+}
+
+// Inicializar búsqueda cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", function() {
+    inicializarBusqueda();
 });

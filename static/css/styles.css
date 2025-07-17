@@ -255,11 +255,54 @@ body.left-collapsed #tituloMegaMas {
     padding: 10px 16px;
     font-size: 1.1em;
     box-shadow: 0 1px 4px rgba(44,62,80,0.06);
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s, border 0.2s;
+    border: 2px solid transparent;
+    flex: 1;
+    min-width: 200px;
 }
 .search-bar input[type="text"]:focus, .search-bar input[type="search"]:focus {
     outline: none;
     box-shadow: 0 2px 8px #2ecc71aa;
+    border-color: var(--verde-agua);
+}
+
+.search-bar input[type="text"]:not(:placeholder-shown), 
+.search-bar input[type="search"]:not(:placeholder-shown) {
+    border-color: var(--azul-mar);
+    background: #f8f9fa;
+}
+
+.search-icon {
+    color: var(--azul-mar);
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+
+.clear-search-btn {
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.clear-search-btn:hover {
+    background: var(--naranja-marisco);
+    transform: scale(1.1);
+}
+
+.clear-search-btn:active {
+    transform: scale(0.95);
 }
 .search-bar button, .search-bar .search-btn {
     background: linear-gradient(90deg, var(--azul-mar) 0%, var(--verde-agua) 100%);
@@ -305,12 +348,14 @@ body.left-collapsed.sidebar-closed .container {
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
+    visibility: visible;
 }
 
 .producto.oculto {
     opacity: 0;
     transform: scale(0.8);
     pointer-events: none;
+    visibility: hidden;
 }
 
 .producto:not(.oculto) {
@@ -337,6 +382,106 @@ body.left-collapsed.sidebar-closed .container {
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-top: 72px
+}
+
+/* Estilos específicos para la página de Editar Producto */
+.form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 24px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 80px;
+    margin-bottom: 40px;
+    position: relative;
+    z-index: 1;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3ec6c1;
+    box-shadow: 0 0 0 3px rgba(62, 198, 193, 0.1);
+}
+
+.file-button {
+    display: inline-block;
+    background: linear-gradient(135deg, #3ec6c1 0%, #1e5d88 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.file-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(62, 198, 193, 0.3);
+}
+
+.form-control-file {
+    display: none;
+}
+
+.preview-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+    border: 3px solid #f0f0f0;
+}
+
+.submit-button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-button:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 #agregar-producto-page .form-group {
@@ -384,4 +529,134 @@ body.left-collapsed.sidebar-closed .container {
     margin: 0;
     font-size: 14px;
     color: #1e5d88;
+}
+
+/* Botón eliminar específico para el carrito */
+.carrito-eliminar-btn {
+    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.carrito-eliminar-btn:hover {
+    background: linear-gradient(90deg, #c0392b 0%, #a93226 100%);
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 4px 12px rgba(192, 57, 43, 0.5);
+}
+
+.carrito-eliminar-btn:active {
+    transform: scale(0.95);
+}
+
+/* Texto del producto en el carrito */
+.producto-texto {
+    flex: 1;
+    word-wrap: break-word;
+    margin-right: 8px;
+    line-height: 1.4;
+}
+
+/* Mensaje de búsqueda */
+.mensaje-busqueda {
+    width: 100%;
+    text-align: center;
+    margin: 20px 0;
+    display: none;
+}
+
+.no-resultados {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px dashed #dee2e6;
+    border-radius: 16px;
+    padding: 40px 20px;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.no-resultados .icono {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 16px;
+    opacity: 0.7;
+}
+
+.no-resultados p {
+    font-size: 1.1rem;
+    color: #495057;
+    margin: 12px 0;
+    font-weight: 500;
+}
+
+.no-resultados strong {
+    color: var(--azul-mar);
+}
+
+.no-resultados small {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 8px;
+}
+
+/* Layout específico para páginas de formularios */
+
+/* Contenedor para páginas de formularios */
+.form-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    margin-left: 250px;
+    margin-right: 0;
+    transition: margin 0.4s cubic-bezier(0.77,0,0.175,1);
+}
+
+/* Ajustes cuando las barras laterales están colapsadas */
+body.left-collapsed .form-page-container {
+    margin-left: 0;
+}
+
+body.both-collapsed .form-page-container {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 900px) {
+    .form-page-container {
+        margin-left: 0;
+        margin-right: 0;
+        padding: 10px;
+    }
+    
+    .form {
+        margin-top: 60px;
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 480px) {
+    .form {
+        margin-top: 50px;
+        padding: 20px;
+    }
+    
+    .image-preview {
+        max-width: 150px;
+        max-height: 150px;
+    }
 }

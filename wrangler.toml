@@ -1,0 +1,8 @@
+[env.production]
+name = "pos-sistema"
+compatibility_date = "2023-10-25"
+
+[build]
+command = "pip install -r requirements.txt"
+cwd = "."
+watch_dir = "."
