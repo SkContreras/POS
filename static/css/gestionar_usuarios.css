@@ -1,0 +1,76 @@
+/* Estilos para la página de gestión de usuarios */
+
+/* Ajuste específico para páginas administrativas con contenedor centrado */
+.container[style*="max-width"] {
+    margin-top: 74px !important; /* 54px barra + 20px adicional para respiración */
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .container[style*="max-width"] {
+        margin-top: 74px !important; /* Mantener el espaciado en móviles */
+    }
+    
+    form {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .form-group:last-child {
+        grid-column: span 1 !important;
+    }
+    
+    table {
+        font-size: 12px;
+    }
+    
+    th, td {
+        padding: 8px !important;
+    }
+}
+
+/* Estilos adicionales para el modal de credenciales */
+.modal-credenciales {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.05), rgba(255, 193, 7, 0.02)) !important;
+    border: 2px solid rgba(255, 152, 0, 0.4) !important;
+    box-shadow: 0 25px 50px rgba(255, 152, 0, 0.2), 
+                0 0 0 1px rgba(255, 152, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.modal-credenciales .icono {
+    color: #ff9800 !important;
+    text-shadow: 0 2px 8px rgba(255, 152, 0, 0.4) !important;
+    filter: drop-shadow(0 4px 8px rgba(255, 152, 0, 0.3));
+}
+
+.cambio-credenciales-highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
+
+.cambio-credenciales-highlight:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    transform: translateY(-3px);
+}

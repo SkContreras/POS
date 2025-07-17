@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Log de Acciones{% endblock %}
 
+{% block head %}
+<!-- Estilos específicos para log de acciones -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/log_acciones.css') }}">
+{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 1200px; margin: 20px auto; padding: 20px;">
+<div class="container" style="max-width: 1200px; margin: 74px auto 20px auto; padding: 20px;">
     <h2 style="margin-bottom: 30px; color: #333; text-align: center;">
         📊 Log de Acciones del Sistema
     </h2>
@@ -109,34 +114,6 @@
     </div>
 </div>
 
-<style>
-.table-responsive {
-    overflow-x: auto;
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .filter-section form {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .stats {
-        grid-template-columns: 1fr !important;
-    }
-    
-    table {
-        font-size: 11px;
-    }
-    
-    th, td {
-        padding: 8px !important;
-    }
-}
-</style>
 {% endblock %}
 
 {% block scripts %}

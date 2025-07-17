@@ -13,7 +13,7 @@
     padding: 40px 10px;
     gap: 30px;
     min-height: 100vh;
-    margin-top: -6px; /* 32px decor-bar + 64px header/título, ajusta según tus necesidades */
+    margin-top: 54px; /* Altura de la barra decorativa para evitar superposición */
     margin-left: 250px;   /* ancho barra izquierda */
     margin-right: 250px;  /* ancho barra derecha */
     transition: margin 0.4s cubic-bezier(0.77,0,0.175,1);

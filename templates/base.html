@@ -36,7 +36,7 @@
             <a href="{{ url_for('auth.log_acciones') }}">📊 Log</a>
             {% endif %}
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
-            <a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;" onclick="return confirm('¿Cerrar sesión?')">🚪 Cerrar Sesión</a>
+            <a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;" onclick="return confirmarCerrarSesion(event)">🚪 Cerrar Sesión</a>
         </nav>
     </div>
     <button class="toggle-gestion-fixed pulse" onclick="toggleGestion()">☰</button>
@@ -83,6 +83,36 @@
         
         // Asegurar que la función esté disponible globalmente
         window.toggleGestion = toggleGestion;
+        
+        // Función para confirmar cerrar sesión con modal estilizado
+        async function confirmarCerrarSesion(event) {
+            event.preventDefault();
+            
+            let confirmar = false;
+            
+            if (window.confirmacionManager) {
+                confirmar = await window.confirmacionManager.crearModal('advertencia',
+                    '🚪 Cerrar Sesión',
+                    '¿Está seguro de que desea cerrar su sesión actual?<br><small>Tendrá que iniciar sesión nuevamente para acceder al sistema.</small>',
+                    {
+                        textoConfirmar: '✅ Sí, cerrar sesión',
+                        textoCancelar: '❌ Cancelar'
+                    }
+                );
+            } else {
+                // Fallback para navegadores sin soporte
+                confirmar = confirm('¿Cerrar sesión?');
+            }
+            
+            if (confirmar) {
+                window.location.href = event.target.href;
+            }
+            
+            return false;
+        }
+        
+        // Hacer la función disponible globalmente
+        window.confirmarCerrarSesion = confirmarCerrarSesion;
     </script>
     {% block scripts %}{% endblock %}
 </body>
