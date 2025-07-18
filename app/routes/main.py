@@ -9,6 +9,7 @@ from app.utils.helpers import obtener_ip_local, generar_qr_code, save_uploaded_f
 import os
 import time
 import threading
+from datetime import datetime
 
 # Crear blueprint para rutas principales
 main_bp = Blueprint('main', __name__)
@@ -31,10 +32,16 @@ def init_main_routes(app, db_manager):
     @main_bp.route('/shutdown', methods=['POST'])
     @admin_required
     def shutdown():
-        """Cierra el servidor"""
+        """Cierra el servidor y la sesión"""
+        from flask import session
+        from app.utils.auth import clear_session
+        
         current_user = get_current_user()
         if current_user:
-            log_model.create(current_user['id'], "Cierre del servidor/tienda")
+            log_model.create(current_user['id'], "Cierre del servidor/tienda y sesión")
+        
+        # Limpiar la sesión antes de cerrar el servidor
+        clear_session()
         
         def shutdown_server():
             time.sleep(1)
@@ -44,24 +51,97 @@ def init_main_routes(app, db_manager):
         
         return jsonify({
             'status': 'success', 
-            'message': 'Servidor apagado - redirigiendo al login',
+            'message': 'Servidor y sesión cerrados - cerrando pestaña',
             'redirect': url_for('auth.login')
         })
     
     @main_bp.route('/qr_code')
     def qr_code():
         """Genera un código QR para acceder al sistema POS"""
-        # Usar el host de la aplicación en producción o IP local en desarrollo
+        from flask import current_app
+        
+        # Usar el host de la aplicación en producción o configuración real del servidor
         if 'herokuapp.com' in request.host or 'pages.dev' in request.host:
             url = f"https://{request.host}"
         else:
-            ip_local = obtener_ip_local()
-            port = int(os.environ.get('PORT', 5000))
-            url = f"http://{ip_local}:{port}"
+            # Usar la información real del servidor configurada en app_modular.py
+            server_info = current_app.config.get('SERVER_INFO', {})
+            host = server_info.get('host', obtener_ip_local())
+            port = server_info.get('port', 5000)
+            protocol = server_info.get('protocol', 'http')
+            
+            # Construir URL con la configuración real
+            if (protocol == 'http' and port == 80) or (protocol == 'https' and port == 443):
+                # Puertos estándar no necesitan ser especificados
+                url = f"{protocol}://{host}"
+            else:
+                # Incluir puerto no estándar
+                url = f"{protocol}://{host}:{port}"
 
         # Generar QR
         buffer = generar_qr_code(url)
+        
+        # Debug: mostrar qué URL se está usando para el QR
+        print(f"🔗 QR generado para URL: {url}")
+        
         return send_file(buffer, mimetype='image/png')
+    
+    @main_bp.route('/qr_debug')
+    def qr_debug():
+        """Debug: Mostrar información del QR"""
+        from flask import current_app
+        import socket
+        
+        # Obtener la misma información que usa el QR
+        if 'herokuapp.com' in request.host or 'pages.dev' in request.host:
+            url = f"https://{request.host}"
+            source = "Producción (host externo)"
+        else:
+            server_info = current_app.config.get('SERVER_INFO', {})
+            host = server_info.get('host', obtener_ip_local())
+            port = server_info.get('port', 5000)
+            protocol = server_info.get('protocol', 'http')
+            
+            if (protocol == 'http' and port == 80) or (protocol == 'https' and port == 443):
+                url = f"{protocol}://{host}"
+            else:
+                url = f"{protocol}://{host}:{port}"
+            source = "Configuración del servidor"
+        
+        # Obtener información adicional de red
+        try:
+            hostname = socket.gethostname()
+            all_ips = socket.gethostbyname_ex(hostname)[2]
+            local_ips = [ip for ip in all_ips if not ip.startswith("127.")]
+        except:
+            hostname = "No disponible"
+            local_ips = ["Error al obtener IPs"]
+        
+        return {
+            'qr_url': url,
+            'source': source,
+            'server_info': current_app.config.get('SERVER_INFO', {}),
+            'request_host': request.host,
+            'detected_ip': obtener_ip_local(),
+            'hostname': hostname,
+            'all_local_ips': local_ips,
+            'instructions': {
+                'check_wifi': 'Asegúrate de que tu teléfono esté conectado a la misma red WiFi',
+                'check_firewall': 'Verifica que no haya firewall bloqueando el puerto',
+                'manual_url': f'Prueba acceder manualmente desde el navegador del teléfono: {url}'
+            }
+        }
+    
+    @main_bp.route('/ping')
+    def ping():
+        """Endpoint simple para probar conectividad"""
+        return {
+            'status': 'ok',
+            'message': '🎉 ¡Conexión exitosa!',
+            'server_time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'your_ip': request.remote_addr,
+            'server_ip': obtener_ip_local()
+        }
     
     @main_bp.route("/historial")
     @login_required

@@ -2,6 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tags para control de pestañas -->
+    <meta name="application-name" content="Mega-Mas POS">
+    <meta name="format-detection" content="telephone=no">
     <title>{% block title %}Punto de Venta{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.jpeg') }}">
@@ -46,6 +50,7 @@
     <script src="{{ url_for('static', filename='js/config.js') }}"></script>
     <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
     <script src="{{ url_for('static', filename='js/confirmacion.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tab_closer.js') }}"></script>
     <script src="{{ url_for('static', filename='js/security.js') }}"></script>
     {% if session.rol == 'administrador' %}
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
@@ -143,7 +148,18 @@
             }
             
             if (confirmar) {
-                window.location.href = event.target.href;
+                // Intentar cerrar la pestaña si es posible
+                if (window.tabCloser) {
+                    // Usar el módulo de cierre de pestañas
+                    setTimeout(() => {
+                        window.tabCloser.cerrarPestanaLogout(event.target.href);
+                    }, 500);
+                } else {
+                    // Fallback tradicional
+                    setTimeout(() => {
+                        window.location.href = event.target.href;
+                    }, 500);
+                }
             }
             
             return false;

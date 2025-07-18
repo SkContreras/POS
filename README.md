@@ -9,6 +9,7 @@ Una aplicación web para gestión de punto de venta construida con Flask.
 - Historial de ventas
 - Generación de códigos QR para acceso móvil
 - Interfaz web responsive
+- **Cierre automático de pestaña**: Al cerrar la tienda, la pestaña se cierra automáticamente
 
 ## Despliegue en Cloudflare Pages
 

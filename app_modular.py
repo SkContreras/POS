@@ -77,6 +77,13 @@ def create_app(config_name=None):
     db_manager = DatabaseManager(app.config['DB_NAME'])
     db_manager.init_db()
     
+    # Almacenar información del servidor para uso en rutas (como QR)
+    app.config['SERVER_INFO'] = {
+        'host': '127.0.0.1',  # Se actualizará en run_app()
+        'port': 5000,         # Se actualizará en run_app()
+        'protocol': 'http'    # Se actualizará en run_app()
+    }
+    
     # Registrar blueprints
     init_auth_routes(app, db_manager)
     init_main_routes(app, db_manager)
@@ -135,6 +142,13 @@ def run_app():
     if os.environ.get('FLASK_ENV') != 'production' and not navegador_abierto:
         navegador_abierto = True
         iniciar_navegador_background()
+    
+    # Actualizar información del servidor en la configuración para uso en rutas
+    app.config['SERVER_INFO'].update({
+        'host': host_ip,
+        'port': port,
+        'protocol': protocol
+    })
     
     # Ejecutar aplicación
     app.run(

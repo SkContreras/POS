@@ -15,14 +15,44 @@ import uuid
 def obtener_ip_local():
     """Obtiene la IP local del sistema de forma automática"""
     try:
-        # Crear un socket temporal para obtener la IP local
+        # Método 1: Crear un socket temporal para obtener la IP local
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         ip_local = s.getsockname()[0]
         s.close()
+        
+        # Verificar que no sea una IP de loopback
+        if ip_local.startswith('127.'):
+            raise Exception("IP de loopback detectada")
+            
         return ip_local
     except Exception:
-        # Fallback a localhost si no se puede obtener la IP
+        try:
+            # Método 2: Usar hostname para obtener IP
+            hostname = socket.gethostname()
+            ip_local = socket.gethostbyname(hostname)
+            
+            # Verificar que no sea loopback
+            if not ip_local.startswith('127.'):
+                return ip_local
+        except Exception:
+            pass
+        
+        try:
+            # Método 3: Obtener todas las IPs y filtrar
+            hostname = socket.gethostname()
+            ip_list = socket.gethostbyname_ex(hostname)[2]
+            
+            # Filtrar IPs válidas (no loopback, no link-local)
+            for ip in ip_list:
+                if (not ip.startswith('127.') and 
+                    not ip.startswith('169.254.') and 
+                    not ip.startswith('::1')):
+                    return ip
+        except Exception:
+            pass
+        
+        # Fallback final a localhost
         return "127.0.0.1"
 
 def generar_qr_code(url):

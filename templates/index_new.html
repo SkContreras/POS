@@ -120,15 +120,15 @@
             
             if (window.confirmacionManager) {
                 confirmar = await window.confirmacionManager.crearModal('advertencia',
-                    'Cerrar servidor',
-                    '¿Estás seguro de que quieres cerrar el servidor POS?<br><small>Esto finalizará la aplicación completamente.</small>',
+                    'Cerrar tienda y sesión',
+                    '¿Estás seguro de que quieres cerrar la tienda?<br><small>Esto cerrará tu sesión y finalizará la aplicación completamente.</small>',
                     {
-                        textoConfirmar: 'Sí, cerrar servidor',
+                        textoConfirmar: 'Sí, cerrar tienda',
                         textoCancelar: 'Cancelar'
                     }
                 );
             } else {
-                confirmar = confirm('¿Estás seguro de que quieres cerrar el servidor POS?');
+                confirmar = confirm('¿Estás seguro de que quieres cerrar la tienda? Esto cerrará tu sesión.');
             }
             
             if (!confirmar) return;
@@ -141,7 +141,7 @@
                 
                 if (window.confirmacionManager) {
                     await window.confirmacionManager.mostrarExito(
-                        'Servidor cerrado correctamente.<br>Puedes cerrar esta ventana.'
+                        'Tienda y sesión cerradas correctamente.<br>Puedes cerrar esta ventana.'
                     );
                 } else {
                     alert(data);
@@ -149,7 +149,11 @@
                 
                 // Intentar cerrar la pestaña después de un pequeño delay
                 setTimeout(() => {
-                    window.close();
+                    if (window.tabCloser) {
+                        window.tabCloser.cerrarPestanaTienda('/login');
+                    } else {
+                        window.close();
+                    }
                 }, 2000);
                 
             } catch (error) {

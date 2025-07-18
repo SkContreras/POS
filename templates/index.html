@@ -26,9 +26,12 @@
                 qrContainer.innerHTML = `
                     <h4 style="font-size: 14px;">Escanéame 📱</h4>
                     <img src="{{ url_for('main.qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
-                    <p style="font-size: 12px; margin-top: 10px; color: #555;">
-                        Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
-                        Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
+                    <p style="font-size: 11px; margin-top: 10px; color: #555; line-height: 1.3;">
+                        📸 <strong>Usa la cámara de tu teléfono</strong><br>
+                        📡 <strong>Conecta tu teléfono a la misma WiFi</strong><br>
+                        🔗 Si el QR no funciona, abre el navegador y ve a:<br>
+                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-size: 10px;">{{ request.host }}</code><br>
+                        <a href="/qr_debug" style="font-size: 10px; color: #007bff;" target="_blank">🔧 Info técnica</a>
                     </p>
                 `;
                 nav.parentElement.appendChild(qrContainer);
@@ -137,31 +140,31 @@
             // Verificar si es administrador
             {% if session.rol != 'administrador' %}
             if (window.toastManager) {
-                window.toastManager.mostrar('Solo administradores pueden cerrar el servidor', 'error');
+                window.toastManager.mostrar('Solo administradores pueden cerrar la tienda', 'error');
             } else {
-                alert('Solo administradores pueden cerrar el servidor');
+                alert('Solo administradores pueden cerrar la tienda');
             }
             return;
             {% endif %}
             
             if (window.confirmacionManager) {
                 confirmar = await window.confirmacionManager.crearModal('advertencia',
-                    'Cerrar servidor',
-                    '¿Estás seguro de que quieres cerrar el servidor POS?<br><small>Esto finalizará la aplicación completamente.</small>',
+                    'Cerrar tienda y sesión',
+                    '¿Estás seguro de que quieres cerrar la tienda?<br><small>Esto cerrará tu sesión y finalizará la aplicación completamente.</small>',
                     {
-                        textoConfirmar: 'Sí, cerrar servidor',
+                        textoConfirmar: 'Sí, cerrar tienda',
                         textoCancelar: 'Cancelar'
                     }
                 );
             } else {
-                confirmar = confirm('¿Estás seguro de que quieres cerrar el servidor POS?');
+                confirmar = confirm('¿Estás seguro de que quieres cerrar la tienda? Esto cerrará tu sesión.');
             }
             
             if (!confirmar) return;
             
             // Verificar contraseña del administrador
             try {
-                await window.verificarAdmin('Confirma tu contraseña para cerrar el servidor:');
+                await window.verificarAdmin('Confirma tu contraseña para cerrar la tienda:');
             } catch (error) {
                 return; // Usuario canceló o error en verificación
             }
@@ -176,18 +179,19 @@
                     
                     if (window.confirmacionManager) {
                         await window.confirmacionManager.mostrarExito(
-                            'Servidor cerrado correctamente.<br>Redirigiendo al login...'
+                            'Tienda y sesión cerradas correctamente.<br>Cerrando pestaña en 3 segundos...'
                         );
                     } else {
-                        alert('Servidor cerrado correctamente. Redirigiendo al login...');
+                        alert('Tienda y sesión cerradas correctamente. Cerrando pestaña...');
                     }
                     
-                    // Redirigir al login después de un pequeño delay
+                    // Intentar cerrar la pestaña después de un pequeño delay
                     setTimeout(() => {
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
+                        if (window.tabCloser) {
+                            window.tabCloser.cerrarPestanaTienda(data.redirect);
                         } else {
-                            window.location.href = '/login';
+                            // Fallback si no está disponible el módulo
+                            window.cerrarPestanaConFallback(data.redirect);
                         }
                     }, 1500);
                 } else {
