@@ -30,6 +30,38 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
+            position: relative;
+        }
+
+        /* Indicador de seguridad */
+        .security-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .security-indicator.secure {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .security-indicator.insecure {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            animation: pulse-warning 2s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         .logo {
@@ -176,6 +208,12 @@
 </head>
 <body>
     <div class="login-container">
+        <!-- Indicador de seguridad -->
+        <div id="security-indicator" class="security-indicator">
+            <span id="security-icon">🔓</span>
+            <span id="security-text">HTTP</span>
+        </div>
+        
         <div class="logo">
             <h1>🏪 Mega-Mas</h1>
             <p>Sistema Punto de Venta</p>
@@ -225,8 +263,29 @@
     </div>
 
     <script>
+        // Actualizar indicador de seguridad
+        function updateSecurityIndicator() {
+            const isHTTPS = window.location.protocol === 'https:';
+            const indicator = document.getElementById('security-indicator');
+            const icon = document.getElementById('security-icon');
+            const text = document.getElementById('security-text');
+            
+            if (isHTTPS) {
+                indicator.className = 'security-indicator secure';
+                icon.textContent = '🔐';
+                text.textContent = 'HTTPS';
+            } else {
+                indicator.className = 'security-indicator insecure';
+                icon.textContent = '🔓';
+                text.textContent = 'HTTP';
+            }
+        }
+        
         // Auto-focus en el campo de usuario al cargar
         document.getElementById('usuario').focus();
+        
+        // Actualizar indicador de seguridad
+        updateSecurityIndicator();
         
         // Permitir envío con Enter
         document.addEventListener('keypress', function(e) {

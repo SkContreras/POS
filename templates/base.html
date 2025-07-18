@@ -26,14 +26,14 @@
         {% endif %}
         
         <nav>
-            <a href="{{ url_for('main.index') }}">💰 Vender</a>
+            <a href="{{ url_for('main.index') }}" class="nav-link" data-page="index">💰 Vender</a>
             {% if session.rol == 'administrador' %}
-            <a href="{{ url_for('productos.agregar_producto') }}">➕ Agregar</a>
-            <a href="{{ url_for('productos.editar_lista') }}">✏️ Editar</a>
-            <a href="{{ url_for('productos.eliminar_producto') }}">🗑️ Eliminar</a>
+            <a href="{{ url_for('productos.agregar_producto') }}" class="nav-link" data-page="agregar">➕ Agregar</a>
+            <a href="{{ url_for('productos.editar_lista') }}" class="nav-link" data-page="editar">✏️ Editar</a>
+            <a href="{{ url_for('productos.eliminar_producto') }}" class="nav-link" data-page="eliminar">🗑️ Eliminar</a>
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
-            <a href="{{ url_for('auth.gestionar_usuarios') }}">👥 Usuarios</a>
-            <a href="{{ url_for('auth.log_acciones') }}">📊 Log</a>
+            <a href="{{ url_for('auth.gestionar_usuarios') }}" class="nav-link" data-page="usuarios">👥 Usuarios</a>
+            <a href="{{ url_for('auth.log_acciones') }}" class="nav-link" data-page="log">📊 Log</a>
             {% endif %}
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
             <a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;" onclick="return confirmarCerrarSesion(event)">🚪 Cerrar Sesión</a>
@@ -46,6 +46,7 @@
     <script src="{{ url_for('static', filename='js/config.js') }}"></script>
     <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
     <script src="{{ url_for('static', filename='js/confirmacion.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/security.js') }}"></script>
     {% if session.rol == 'administrador' %}
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     {% endif %}
@@ -58,7 +59,44 @@
             if (window.sidebarManager) {
                 window.sidebarManager.inicializarSidebars();
             }
+            
+            // Marcar el botón activo según la página actual
+            marcarBotonActivo();
         });
+        
+        // Función para detectar y marcar el botón activo
+        function marcarBotonActivo() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar.left .nav-link');
+            
+            // Remover clase active de todos los enlaces
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Determinar qué página está activa basándose en la URL
+            let activePage = '';
+            
+            if (currentPath === '/' || currentPath === '/index') {
+                activePage = 'index';
+            } else if (currentPath.includes('/agregar_producto')) {
+                activePage = 'agregar';
+            } else if (currentPath.includes('/editar_lista') || currentPath.includes('/editar_producto')) {
+                activePage = 'editar';
+            } else if (currentPath.includes('/eliminar_producto')) {
+                activePage = 'eliminar';
+            } else if (currentPath.includes('/gestionar_usuarios')) {
+                activePage = 'usuarios';
+            } else if (currentPath.includes('/log_acciones')) {
+                activePage = 'log';
+            }
+            
+            // Marcar el enlace correspondiente como activo
+            if (activePage) {
+                const activeLink = document.querySelector(`.sidebar.left .nav-link[data-page="${activePage}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+        }
         
         // Función de compatibilidad para el botón del base template
         function toggleGestion() {

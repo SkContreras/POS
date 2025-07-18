@@ -13,28 +13,25 @@ def login_required(f):
     """Decorador que requiere autenticación"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('auth.login'))
-        
-        # Verificar si la sesión es anterior al inicio del servidor actual
-        if 'session_start' in session:
-            session_start = datetime.fromisoformat(session['session_start'])
-            if session_start < SERVER_START_TIME:
-                session.clear()
-                flash('La sesión ha expirado debido al reinicio del servidor. Inicia sesión nuevamente.', 'info')
-                return redirect(url_for('auth.login'))
-        else:
-            # Si no tiene marca de tiempo de sesión, es una sesión antigua
-            session.clear()
-            flash('Sesión inválida. Inicia sesión nuevamente.', 'info')
+        # Verificar múltiples condiciones de sesión válida
+        if ('user_id' not in session or 
+            'authenticated' not in session or 
+            not session.get('authenticated')):
+            flash('Por favor, inicia sesión para continuar.', 'info')
             return redirect(url_for('auth.login'))
         
         # Verificar timeout de sesión (8 horas)
         if 'last_activity' in session:
-            last_activity = datetime.fromisoformat(session['last_activity'])
-            if datetime.now() - last_activity > timedelta(hours=8):
+            try:
+                last_activity = datetime.fromisoformat(session['last_activity'])
+                if datetime.now() - last_activity > timedelta(hours=8):
+                    session.clear()
+                    flash('Sesión expirada por inactividad. Inicia sesión nuevamente.', 'info')
+                    return redirect(url_for('auth.login'))
+            except ValueError:
+                # Si hay error en el formato de fecha, limpiar sesión
                 session.clear()
-                flash('Sesión expirada por inactividad. Inicia sesión nuevamente.', 'info')
+                flash('Sesión inválida. Inicia sesión nuevamente.', 'info')
                 return redirect(url_for('auth.login'))
         
         # Actualizar última actividad
@@ -74,14 +71,23 @@ def create_session(user_data):
     # Limpiar cualquier sesión anterior
     session.clear()
     
-    # Configurar nueva sesión como temporal (se borra al cerrar navegador)
-    session.permanent = False
+    # Configurar nueva sesión como permanente para mejor compatibilidad
+    session.permanent = True
+    
+    # Datos básicos del usuario
     session['user_id'] = user_data[0]
     session['usuario'] = user_data[1] if len(user_data) > 1 else ''
     session['rol'] = user_data[2] if len(user_data) > 2 else ''
     session['nombre_completo'] = user_data[3] if len(user_data) > 3 else ''
-    session['last_activity'] = datetime.now().isoformat()
-    session['session_start'] = datetime.now().isoformat()
+    
+    # Timestamps para control de sesión
+    now = datetime.now().isoformat()
+    session['last_activity'] = now
+    session['session_start'] = now
+    
+    # Flag de sesión válida para verificaciones adicionales
+    session['authenticated'] = True
+    session['session_id'] = f"{user_data[0]}_{datetime.now().timestamp()}"
 
 def clear_session():
     """Limpia la sesión actual"""

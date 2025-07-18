@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - POS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        .credentials {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #764ba2;
+        }
+        .debug-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Login - Sistema POS</h1>
+        
+        <div class="credentials">
+            <h3>🔑 Credenciales de Prueba:</h3>
+            <p><strong>Usuario:</strong> admin</p>
+            <p><strong>Contraseña:</strong> admin123</p>
+        </div>
+        
+        <div class="debug-info">
+            <h4>📊 Información de Debug:</h4>
+            <p><strong>URL Servidor:</strong> http://127.0.0.1:5000</p>
+            <p><strong>Estado:</strong> <span id="server-status">Verificando...</span></p>
+            <p><strong>Cookies habilitadas:</strong> <span id="cookies-enabled">Verificando...</span></p>
+            <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+        </div>
+        
+        <a href="http://127.0.0.1:5000/login" class="btn">🔗 Ir al Login</a>
+        <button onclick="testLogin()" class="btn">🧪 Test Login Automático</button>
+        
+        <div id="test-results" style="margin-top: 20px;"></div>
+        
+        <script>
+            // Verificar cookies
+            document.getElementById('cookies-enabled').textContent = navigator.cookieEnabled ? 'Sí' : 'No';
+            document.getElementById('user-agent').textContent = navigator.userAgent;
+            
+            // Verificar estado del servidor
+            fetch('http://127.0.0.1:5000/login')
+                .then(function(response) {
+                    document.getElementById('server-status').textContent = response.ok ? '✅ Funcionando' : '❌ Error ' + response.status;
+                })
+                .catch(function(error) {
+                    document.getElementById('server-status').textContent = '❌ No disponible';
+                });
+            
+            function testLogin() {
+                var resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = '<p>🔄 Probando login automático...</p>';
+                
+                var formData = new FormData();
+                formData.append('usuario', 'admin');
+                formData.append('password', 'admin123');
+                
+                fetch('http://127.0.0.1:5000/login', {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'manual',
+                    credentials: 'include'
+                })
+                .then(function(response) {
+                    var headersObj = {};
+                    for (var pair of response.headers.entries()) {
+                        headersObj[pair[0]] = pair[1];
+                    }
+                    
+                    resultsDiv.innerHTML = '<div class="debug-info">' +
+                        '<h4>🧪 Resultado del Test:</h4>' +
+                        '<p><strong>Status:</strong> ' + response.status + '</p>' +
+                        '<p><strong>Headers:</strong></p>' +
+                        '<pre>' + JSON.stringify(headersObj, null, 2) + '</pre>' +
+                        '</div>';
+                    
+                    if (response.status === 302) {
+                        resultsDiv.innerHTML += '<p>✅ Login exitoso (redirección detectada)</p>';
+                        setTimeout(function() {
+                            window.location.href = 'http://127.0.0.1:5000/';
+                        }, 2000);
+                    }
+                })
+                .catch(function(error) {
+                    resultsDiv.innerHTML = '<p>❌ Error: ' + error.message + '</p>';
+                });
+            }
+        </script>
+    </div>
+</body>
+</html>

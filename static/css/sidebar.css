@@ -227,6 +227,7 @@
 }
 
 .sidebar.left nav a {
+    position: relative;
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
     border-radius: 10px;
@@ -247,6 +248,65 @@
     background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilos para el botón activo */
+.sidebar.left nav a.active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15)) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+}
+
+.sidebar.left nav a.active:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.2)) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 7px 25px rgba(0, 0, 0, 0.25), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    color: #fff !important;
+}
+
+/* Indicador visual adicional para el botón activo */
+.sidebar.left nav a.active::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6));
+    border-radius: 2px;
+    animation: glow-bar 2s ease-in-out infinite alternate;
+}
+
+/* Efecto de brillo sutil en el texto del botón activo */
+.sidebar.left nav a.active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 10px;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shine 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes glow-bar {
+    0% { opacity: 0.6; box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+    100% { opacity: 1; box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); }
+}
+
+@keyframes shine {
+    0%, 100% { transform: translateX(-100%); opacity: 0; }
+    50% { transform: translateX(100%); opacity: 1; }
 }
 
 .sidebar.left nav hr {
