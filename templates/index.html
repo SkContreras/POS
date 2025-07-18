@@ -44,7 +44,7 @@
         <!-- Barra de búsqueda de productos -->
         <form class="search-bar">
           <span class="search-icon">&#128269;</span>
-          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off">
+          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off" value="{{ busqueda_actual }}">
           <button type="button" id="clearSearch" class="clear-search-btn" title="Limpiar búsqueda">×</button>
         </form>
         
@@ -60,6 +60,38 @@
         </div>
     </div>
 
+    <!-- Barra de filtros y ordenamiento -->
+    <div class="filtros-container">
+        <div class="filtros-wrapper">
+            <div class="filtro-grupo">
+                <label for="orderSelect">📊 Ordenar por:</label>
+                <select id="orderSelect" class="filtro-select">
+                    <option value="recientes" {% if order_by == 'recientes' %}selected{% endif %}>📅 Más recientes</option>
+                    <option value="antiguos" {% if order_by == 'antiguos' %}selected{% endif %}>🕰️ Más antiguos</option>
+                    <option value="alfabetico" {% if order_by == 'alfabetico' %}selected{% endif %}>🔤 Alfabético (A-Z)</option>
+                    <option value="precio_asc" {% if order_by == 'precio_asc' %}selected{% endif %}>💰 Precio (menor a mayor)</option>
+                    <option value="precio_desc" {% if order_by == 'precio_desc' %}selected{% endif %}>💎 Precio (mayor a menor)</option>
+                    <option value="mas_vendido" {% if order_by == 'mas_vendido' %}selected{% endif %}>🔥 Más vendidos</option>
+                    <option value="menos_vendido" {% if order_by == 'menos_vendido' %}selected{% endif %}>❄️ Menos vendidos</option>
+                </select>
+            </div>
+            
+            <div class="filtro-grupo">
+                <label for="categorySelect">🏷️ Categoría:</label>
+                <select id="categorySelect" class="filtro-select">
+                    <option value="todas" {% if categoria_actual == 'todas' %}selected{% endif %}>🌟 Todas las categorías</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if categoria_actual == cat %}selected{% endif %}>
+                            {% if cat == 'Pescadería' %}🐟{% else %}🍽️{% endif %} {{ cat }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="button" id="resetFilters" class="reset-btn" title="Restablecer filtros">🔄 Reset</button>
+        </div>
+    </div>
+
     <!-- Botón flotante para mostrar el carrito cuando está colapsado -->
     <button id="showCartBtn" class="show-cart-btn" onclick="toggleCarrito()" style="display:none;">🛒</button>
 
@@ -70,9 +102,20 @@
             <div class="producto"
                  data-id="{{ p[0] }}"
                  data-nombre="{{ p[1] }}"
-                 data-precio="{{ p[2] }}">
+                 data-precio="{{ p[2] }}"
+                 data-categoria="{{ p[4] if p|length > 4 else 'Platillos de cocina' }}">
                 <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="{{ p[1] }}">
-                <p class="nombre-producto">{{ p[1] }} - ${{ "%.2f"|format(p[2]) }}</p>
+                <div class="producto-info">
+                    <div class="categoria-badge">
+                        {% if p|length > 4 and p[4] == 'Pescadería' %}
+                            <span class="categoria pescaderia">🐟 Pescadería</span>
+                        {% else %}
+                            <span class="categoria cocina">🍽️ Cocina</span>
+                        {% endif %}
+                    </div>
+                    <h4 class="nombre-producto">{{ p[1] }}</h4>
+                    <p class="precio-producto">${{ "%.2f"|format(p[2]) }}</p>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -209,5 +252,62 @@
                 }
             }
         }
+        
+        // Sistema de filtros y ordenamiento
+        function aplicarFiltros() {
+            const orderBy = document.getElementById('orderSelect').value;
+            const categoria = document.getElementById('categorySelect').value;
+            const busqueda = document.getElementById('busqueda').value;
+            
+            // Construir URL con parámetros
+            const params = new URLSearchParams();
+            
+            if (orderBy && orderBy !== 'recientes') {
+                params.set('order_by', orderBy);
+            }
+            if (categoria && categoria !== 'todas') {
+                params.set('categoria', categoria);
+            }
+            if (busqueda && busqueda.trim() !== '') {
+                params.set('busqueda', busqueda.trim());
+            }
+            
+            // Redirigir con los filtros
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = newUrl;
+        }
+        
+        // Event listeners para los filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderSelect = document.getElementById('orderSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const resetBtn = document.getElementById('resetFilters');
+            const busquedaInput = document.getElementById('busqueda');
+            
+            // Aplicar filtros cuando cambian los selectores
+            if (orderSelect) {
+                orderSelect.addEventListener('change', aplicarFiltros);
+            }
+            
+            if (categorySelect) {
+                categorySelect.addEventListener('change', aplicarFiltros);
+            }
+            
+            // Botón de reset
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    window.location.href = window.location.pathname;
+                });
+            }
+            
+            // Búsqueda con debounce
+            let searchTimeout;
+            if (busquedaInput) {
+                busquedaInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(aplicarFiltros, 500); // Esperar 500ms después de dejar de escribir
+                });
+            }
+        });
     </script>
 {% endblock %}

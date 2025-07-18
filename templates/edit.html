@@ -17,6 +17,14 @@
         </div>
 
         <div class="form-group">
+            <label for="categoria">Categoría:</label>
+            <select id="categoria" name="categoria" class="form-control" required>
+                <option value="Platillos de cocina" {% if producto.categoria == "Platillos de cocina" %}selected{% endif %}>🍽️ Platillos de cocina</option>
+                <option value="Pescadería" {% if producto.categoria == "Pescadería" %}selected{% endif %}>🐟 Pescadería</option>
+            </select>
+        </div>
+
+        <div class="form-group">
             <label for="fileInput" class="file-button">📷 Cambiar imagen</label>
             <input type="file" id="fileInput" name="fileInput" accept="image/*" class="form-control-file" onchange="loadFile(event)">
         </div>

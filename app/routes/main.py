@@ -26,8 +26,23 @@ def init_main_routes(app, db_manager):
     @login_required
     def index():
         """Página principal del POS"""
-        productos = producto_model.get_all()
-        return render_template("index.html", productos=productos)
+        # Obtener parámetros de filtro y ordenamiento
+        order_by = request.args.get('order_by', 'recientes')
+        categoria = request.args.get('categoria', 'todas')
+        busqueda = request.args.get('busqueda', '')
+        
+        # Obtener productos filtrados
+        productos = producto_model.get_all_filtered(order_by, categoria, busqueda)
+        
+        # Obtener todas las categorías para el selector
+        categorias = producto_model.get_categories()
+        
+        return render_template("index.html", 
+                             productos=productos, 
+                             categorias=categorias,
+                             order_by=order_by,
+                             categoria_actual=categoria,
+                             busqueda_actual=busqueda)
     
     @main_bp.route('/shutdown', methods=['POST'])
     @admin_required
@@ -160,6 +175,14 @@ def init_main_routes(app, db_manager):
         
         current_user = get_current_user()
         venta_id = venta_model.create(total, current_user['id'], carrito)
+        
+        # Incrementar contador de ventas para cada producto vendido
+        for item in carrito:
+            producto_id = item.get('id')
+            cantidad = item.get('cantidad', 1)
+            # Incrementar tantas veces como la cantidad vendida
+            for _ in range(cantidad):
+                producto_model.increment_sales_count(producto_id)
         
         # Log de la venta
         log_model.create(current_user['id'], f"Venta realizada - ID: {venta_id}", 

@@ -25,6 +25,7 @@ def init_productos_routes(app, db_manager):
         if request.method == 'POST':
             nombre = request.form['nombre']
             precio = request.form['precio']
+            categoria = request.form.get('categoria', 'Platillos de cocina')
             file = request.files.get('fileInput')
 
             # Manejar imagen
@@ -34,7 +35,7 @@ def init_productos_routes(app, db_manager):
                 filename = 'default.png'
             
             # Crear producto
-            producto_id = producto_model.create(nombre, precio, filename)
+            producto_id = producto_model.create(nombre, precio, filename, categoria)
             
             # Log de la acción
             current_user = get_current_user()
@@ -58,6 +59,7 @@ def init_productos_routes(app, db_manager):
         if request.method == "POST":
             nombre = request.form.get("nombre")
             precio = request.form.get("precio")
+            categoria = request.form.get("categoria", "Platillos de cocina")
             file = request.files.get("fileInput")
 
             # Obtener imagen actual
@@ -69,7 +71,7 @@ def init_productos_routes(app, db_manager):
                 imagen_url = save_uploaded_file(file, app.config['UPLOAD_FOLDER'], producto_id)
 
             # Actualizar producto
-            producto_model.update(producto_id, nombre, precio, imagen_url)
+            producto_model.update(producto_id, nombre, precio, imagen_url, categoria)
             
             # Log de la acción
             current_user = get_current_user()
@@ -86,7 +88,8 @@ def init_productos_routes(app, db_manager):
                     "id": producto[0],
                     "nombre": producto[1],
                     "precio": producto[2],
-                    "imagen_url": producto[3]
+                    "imagen_url": producto[3],
+                    "categoria": producto[4] if len(producto) > 4 else "Platillos de cocina"
                 }
                 return render_template("edit.html", producto=producto_dict)
             else:

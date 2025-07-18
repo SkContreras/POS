@@ -26,8 +26,41 @@ class DatabaseManager:
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         nombre TEXT NOT NULL,
                         precio REAL NOT NULL,
-                        imagen TEXT NOT NULL
+                        imagen TEXT NOT NULL,
+                        categoria TEXT DEFAULT 'Platillos de cocina',
+                        fecha_agregado TEXT DEFAULT CURRENT_TIMESTAMP,
+                        veces_vendido INTEGER DEFAULT 0
                     )''')
+        
+        # Migración: Agregar columna categoria si no existe
+        try:
+            c.execute("SELECT categoria FROM productos LIMIT 1")
+        except sqlite3.OperationalError:
+            c.execute("ALTER TABLE productos ADD COLUMN categoria TEXT DEFAULT 'Platillos de cocina'")
+            # Actualizar productos existentes que no tengan categoría
+            c.execute("UPDATE productos SET categoria = 'Platillos de cocina' WHERE categoria IS NULL")
+            conn.commit()
+            print("✅ Migración aplicada: Columna categoria agregada a la tabla productos")
+        
+        # Migración: Agregar columna fecha_agregado si no existe
+        try:
+            c.execute("SELECT fecha_agregado FROM productos LIMIT 1")
+        except sqlite3.OperationalError:
+            c.execute("ALTER TABLE productos ADD COLUMN fecha_agregado TEXT")
+            # Actualizar productos existentes con fecha actual
+            c.execute("UPDATE productos SET fecha_agregado = datetime('now') WHERE fecha_agregado IS NULL")
+            conn.commit()
+            print("✅ Migración aplicada: Columna fecha_agregado agregada a la tabla productos")
+        
+        # Migración: Agregar columna veces_vendido si no existe
+        try:
+            c.execute("SELECT veces_vendido FROM productos LIMIT 1")
+        except sqlite3.OperationalError:
+            c.execute("ALTER TABLE productos ADD COLUMN veces_vendido INTEGER DEFAULT 0")
+            # Actualizar productos existentes con contador en 0
+            c.execute("UPDATE productos SET veces_vendido = 0 WHERE veces_vendido IS NULL")
+            conn.commit()
+            print("✅ Migración aplicada: Columna veces_vendido agregada a la tabla productos")
         
         # Tabla de ventas
         c.execute('''CREATE TABLE IF NOT EXISTS ventas (
@@ -126,23 +159,23 @@ class Producto:
         conn.close()
         return producto
     
-    def create(self, nombre, precio, imagen):
+    def create(self, nombre, precio, imagen, categoria='Platillos de cocina'):
         """Crea un nuevo producto"""
         conn = self.db.get_connection()
         c = conn.cursor()
-        c.execute("INSERT INTO productos (nombre, precio, imagen) VALUES (?, ?, ?)",
-                  (nombre, precio, imagen))
+        c.execute("INSERT INTO productos (nombre, precio, imagen, categoria, fecha_agregado, veces_vendido) VALUES (?, ?, ?, ?, datetime('now'), 0)",
+                  (nombre, precio, imagen, categoria))
         product_id = c.lastrowid
         conn.commit()
         conn.close()
         return product_id
     
-    def update(self, product_id, nombre, precio, imagen):
+    def update(self, product_id, nombre, precio, imagen, categoria='Platillos de cocina'):
         """Actualiza un producto"""
         conn = self.db.get_connection()
         c = conn.cursor()
-        c.execute("UPDATE productos SET nombre = ?, precio = ?, imagen = ? WHERE id = ?",
-                  (nombre, precio, imagen, product_id))
+        c.execute("UPDATE productos SET nombre = ?, precio = ?, imagen = ?, categoria = ? WHERE id = ?",
+                  (nombre, precio, imagen, categoria, product_id))
         conn.commit()
         conn.close()
     
@@ -153,6 +186,65 @@ class Producto:
         c.execute("DELETE FROM productos WHERE id = ?", (product_id,))
         conn.commit()
         conn.close()
+    
+    def get_all_filtered(self, order_by='fecha_agregado', categoria=None, busqueda=None):
+        """Obtiene productos con filtros y ordenamiento"""
+        conn = self.db.get_connection()
+        c = conn.cursor()
+        
+        # Construir consulta base
+        query = "SELECT * FROM productos WHERE 1=1"
+        params = []
+        
+        # Filtro por categoría
+        if categoria and categoria != 'todas':
+            query += " AND categoria = ?"
+            params.append(categoria)
+        
+        # Filtro por búsqueda
+        if busqueda:
+            query += " AND nombre LIKE ?"
+            params.append(f"%{busqueda}%")
+        
+        # Ordenamiento
+        if order_by == 'alfabetico':
+            query += " ORDER BY nombre ASC"
+        elif order_by == 'precio_asc':
+            query += " ORDER BY precio ASC"
+        elif order_by == 'precio_desc':
+            query += " ORDER BY precio DESC"
+        elif order_by == 'mas_vendido':
+            query += " ORDER BY veces_vendido DESC"
+        elif order_by == 'menos_vendido':
+            query += " ORDER BY veces_vendido ASC"
+        elif order_by == 'recientes':
+            query += " ORDER BY fecha_agregado DESC"
+        elif order_by == 'antiguos':
+            query += " ORDER BY fecha_agregado ASC"
+        else:  # por defecto fecha de agregado desc
+            query += " ORDER BY fecha_agregado DESC"
+        
+        c.execute(query, params)
+        productos = c.fetchall()
+        conn.close()
+        return productos
+    
+    def increment_sales_count(self, product_id):
+        """Incrementa el contador de ventas de un producto"""
+        conn = self.db.get_connection()
+        c = conn.cursor()
+        c.execute("UPDATE productos SET veces_vendido = veces_vendido + 1 WHERE id = ?", (product_id,))
+        conn.commit()
+        conn.close()
+    
+    def get_categories(self):
+        """Obtiene todas las categorías disponibles"""
+        conn = self.db.get_connection()
+        c = conn.cursor()
+        c.execute("SELECT DISTINCT categoria FROM productos ORDER BY categoria")
+        categorias = [row[0] for row in c.fetchall()]
+        conn.close()
+        return categorias
 
 class Usuario:
     """Modelo para usuarios"""
