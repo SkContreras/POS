@@ -12,16 +12,42 @@
         </div>
 
         <div class="form-group">
-            <label for="precio">Precio ($):</label>
-            <input type="number" step="0.01" id="precio" name="precio" value="{{ producto.precio }}" class="form-control" required>
+            <label for="precio_compra">Precio de Compra ($):</label>
+            <input type="number" step="0.01" id="precio_compra" name="precio_compra" value="{{ producto.precio_compra if producto.precio_compra is not none else 0 }}" class="form-control" required onchange="calcularMargen()">
+            <small class="help-text">Precio al que compras el producto</small>
+        </div>
+
+        <div class="form-group">
+            <label for="precio_venta">Precio de Venta ($):</label>
+            <input type="number" step="0.01" id="precio_venta" name="precio_venta" value="{{ producto.precio_venta if producto.precio_venta is not none else producto.precio }}" class="form-control" required onchange="calcularMargen()">
+            <small class="help-text">Precio al que vendes el producto al cliente</small>
+        </div>
+
+        <div class="form-group">
+            <div id="margen-info" style="padding: 10px; border-radius: 5px; display: none;">
+                <strong>Margen de ganancia: <span id="margen-porcentaje">0%</span></strong>
+                <br><small>Ganancia por unidad: $<span id="ganancia-unidad">0.00</span></small>
+            </div>
         </div>
 
         <div class="form-group">
             <label for="categoria">Categoría:</label>
-            <select id="categoria" name="categoria" class="form-control" required>
+            <select id="categoria" name="categoria" class="form-control" required onchange="updateStockField()">
                 <option value="Platillos de cocina" {% if producto.categoria == "Platillos de cocina" %}selected{% endif %}>🍽️ Platillos de cocina</option>
                 <option value="Pescadería" {% if producto.categoria == "Pescadería" %}selected{% endif %}>🐟 Pescadería</option>
             </select>
+        </div>
+
+        <div class="form-group">
+            <label for="stock">Stock actual:</label>
+            <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto.stock is not none else 0 }}" class="form-control" required>
+            <small class="help-text">
+                {% if producto.categoria == "Pescadería" %}
+                    ⚠️ Producto de pescadería - Mantener stock bajo para frescura
+                {% else %}
+                    ℹ️ Producto no perecedero - Puede mantener stock alto
+                {% endif %}
+            </small>
         </div>
 
         <div class="form-group">
@@ -76,5 +102,51 @@
         
         return false;
     }
+    
+    function updateStockField() {
+        const categoria = document.getElementById("categoria").value;
+        const stockField = document.getElementById("stock");
+        const helpText = stockField.nextElementSibling;
+        
+        if (categoria === "Pescadería") {
+            stockField.style.backgroundColor = "#ffe6e6"; // Fondo rojo claro para indicar stock crítico
+            helpText.innerHTML = "⚠️ Producto de pescadería - Mantener stock bajo para frescura";
+            helpText.style.color = "#d63384";
+        } else {
+            stockField.style.backgroundColor = "#e6ffe6"; // Fondo verde claro para stock alto
+            helpText.innerHTML = "ℹ️ Producto no perecedero - Puede mantener stock alto";
+            helpText.style.color = "#198754";
+        }
+    }
+    
+    function calcularMargen() {
+        const precioCompra = parseFloat(document.getElementById('precio_compra').value) || 0;
+        const precioVenta = parseFloat(document.getElementById('precio_venta').value) || 0;
+        
+        if (precioCompra > 0 && precioVenta > 0) {
+            if (precioVenta <= precioCompra) {
+                document.getElementById('margen-info').style.backgroundColor = '#ffe6e6';
+                document.getElementById('margen-porcentaje').textContent = 'PÉRDIDA';
+                document.getElementById('ganancia-unidad').textContent = (precioVenta - precioCompra).toFixed(2);
+                document.getElementById('margen-info').style.display = 'block';
+            } else {
+                const margen = ((precioVenta - precioCompra) / precioCompra) * 100;
+                const ganancia = precioVenta - precioCompra;
+                
+                document.getElementById('margen-info').style.backgroundColor = margen >= 30 ? '#e6ffe6' : (margen >= 15 ? '#fff3e0' : '#ffe6e6');
+                document.getElementById('margen-porcentaje').textContent = margen.toFixed(1) + '%';
+                document.getElementById('ganancia-unidad').textContent = ganancia.toFixed(2);
+                document.getElementById('margen-info').style.display = 'block';
+            }
+        } else {
+            document.getElementById('margen-info').style.display = 'none';
+        }
+    }
+    
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStockField();
+        calcularMargen();
+    });
 </script>
 {% endblock %}

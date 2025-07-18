@@ -11,6 +11,10 @@ from app.routes.productos import init_productos_routes
 from app.utils.helpers import obtener_ip_local, iniciar_navegador_background
 import os
 import ssl
+import sys
+
+# Variable global para controlar la apertura del navegador
+navegador_abierto = False
 
 def create_app(config_name=None):
     """Factory para crear la aplicación Flask"""
@@ -33,6 +37,10 @@ def create_app(config_name=None):
     @app.before_request
     def security_headers():
         """Aplicar headers de seguridad"""
+        # Detectar si es una página con campos de contraseña
+        password_endpoints = ['/login', '/gestionar_usuarios', '/auth/login', '/users']
+        is_password_page = any(endpoint in request.path for endpoint in password_endpoints)
+        
         # Solo verificar HTTPS si está configurado Y tenemos certificados válidos
         if app.config.get('USE_HTTPS') and not request.is_secure:
             # Verificar que los certificados existen antes de redirigir
@@ -44,9 +52,15 @@ def create_app(config_name=None):
                 not app.config.get('DEBUG')):
                 return redirect(request.url.replace('http://', 'https://'))
             else:
-                # En desarrollo o sin certificados, solo mostrar advertencia
+                # En desarrollo o sin certificados, mostrar advertencia de seguridad
                 from flask import g
                 g.security_warning = True
+                if is_password_page:
+                    g.password_security_warning = True
+        elif not request.is_secure and is_password_page:
+            # Advertencia específica para páginas con contraseñas en HTTP
+            from flask import g
+            g.password_security_warning = True
     
     @app.after_request 
     def add_security_headers(response):
@@ -89,40 +103,59 @@ def create_app(config_name=None):
     init_main_routes(app, db_manager)
     init_productos_routes(app, db_manager)
     
-    return app, db_manager
+    # Registrar rutas de gastos
+    from app.routes.gastos import init_gastos_routes
+    init_gastos_routes(app, db_manager)
+    
+    return app
 
 def run_app():
-    """Ejecuta la aplicación"""
-    # Crear aplicación
-    app, db_manager = create_app()
+    """Ejecuta la aplicación con configuraciones de red y SSL"""
+    app = create_app()
     
-    # Variable para controlar si ya se abrió el navegador
+    # Obtener puerto de argumentos de línea de comandos o usar el por defecto
+    port_override = None
+    if len(sys.argv) > 1:
+        for i, arg in enumerate(sys.argv):
+            if arg == '--port' and i + 1 < len(sys.argv):
+                try:
+                    port_override = int(sys.argv[i + 1])
+                except ValueError:
+                    print("⚠️  Puerto inválido, usando puerto por defecto")
+    
+    # Configuración de red
+    host_ip = obtener_ip_local()
+    use_https = app.config.get('USE_HTTPS', False)
+    http_port = port_override or app.config.get('HTTP_PORT', 5000)
+    https_port = port_override or app.config.get('HTTPS_PORT', 5443)
+    
+    # Variable global para controlar la apertura del navegador
+    global navegador_abierto
     navegador_abierto = False
     
-    # Obtener configuración del servidor
-    host_ip = obtener_ip_local()
-    
-    # Verificar si se debe usar HTTPS desde variables de entorno
-    use_https = os.environ.get('USE_HTTPS', 'false').lower() == 'true'
-    https_port = int(os.environ.get('HTTPS_PORT', '5443'))
-    http_port = int(os.environ.get('PORT', app.config.get('DEFAULT_PORT', 5000)))
-    
-    # Configurar SSL si está habilitado
+    # Configuración SSL
     ssl_context = None
+    
     if use_https:
+        # Configuración HTTPS
         cert_path = os.environ.get('SSL_CERT_PATH', 'certificates/cert.pem')
         key_path = os.environ.get('SSL_KEY_PATH', 'certificates/key.pem')
         
-        # Verificar que existen los certificados
-        if os.path.exists(cert_path) and os.path.exists(key_path):
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            ssl_context.load_cert_chain(cert_path, key_path)
-            port = https_port
-            protocol = "https"
-            print(f"🔐 Iniciando servidor POS en {protocol}://{host_ip}:{port}")
-        else:
-            print("⚠️  ADVERTENCIA: Certificados SSL no encontrados. Ejecutando en HTTP.")
-            use_https = False
+        try:
+            # Verificar si los certificados existen
+            if os.path.exists(cert_path) and os.path.exists(key_path):
+                ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+                ssl_context.load_cert_chain(cert_path, key_path)
+                port = https_port
+                protocol = "https"
+                print(f"🔒 Iniciando servidor POS seguro en {protocol}://{host_ip}:{port}")
+            else:
+                print("⚠️  Certificados SSL no encontrados, usando HTTP")
+                port = http_port
+                protocol = "http"
+                print(f"🔐 Iniciando servidor POS en {protocol}://{host_ip}:{port}")
+        except Exception as e:
+            print(f"⚠️  Error configurando SSL: {e}, usando HTTP")
             port = http_port
             protocol = "http"
             print(f"🔐 Iniciando servidor POS en {protocol}://{host_ip}:{port}")

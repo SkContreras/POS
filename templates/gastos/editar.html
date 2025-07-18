@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Editar Gasto{% endblock %}
+
+{% block head %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+.gastos-container {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.form-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border-radius: 15px;
+}
+
+.header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-enhanced {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary-enhanced {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary-enhanced {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.btn-warning-enhanced {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+}
+
+.info-actual {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.recurrente-options {
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+    display: none;
+}
+
+.help-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="gastos-container">
+    <!-- Header -->
+    <div class="card header-gradient mb-4">
+        <div class="card-body text-center">
+            <h2 class="mb-3">✏️ Editar Gasto</h2>
+            <p class="mb-0">Modifica la información del gasto operativo</p>
+        </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Información actual -->
+            <div class="info-actual">
+                <h6><strong>📋 Información Actual:</strong></h6>
+                <p class="mb-1"><strong>Descripción:</strong> {{ gasto[3] }}</p>
+                <p class="mb-1"><strong>Monto:</strong> ${{ "%.2f"|format(gasto[4]) }}</p>
+                <p class="mb-1"><strong>Categoría:</strong> {{ gasto[1] }}</p>
+                <p class="mb-0"><strong>Fecha:</strong> {{ gasto[5] }}</p>
+            </div>
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <h5 class="mb-0">📝 Modificar Información</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('gastos.actualizar_gasto', gasto_id=gasto[0]) }}">
+                        <div class="row">
+                            <!-- Categoría -->
+                            <div class="col-md-6 mb-3">
+                                <label for="categoria" class="form-label">Categoría *</label>
+                                <select id="categoria" name="categoria" class="form-select" required>
+                                    <option value="">Seleccionar categoría</option>
+                                    {% for categoria, subcategorias in categorias.items() %}
+                                    <option value="{{ categoria }}" {{ 'selected' if categoria == gasto[1] }}>{{ categoria }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="help-text">Tipo de gasto según su naturaleza</div>
+                            </div>
+
+                            <!-- Subcategoría -->
+                            <div class="col-md-6 mb-3">
+                                <label for="subcategoria" class="form-label">Subcategoría</label>
+                                <select id="subcategoria" name="subcategoria" class="form-select">
+                                    <option value="">Seleccionar subcategoría</option>
+                                </select>
+                                <div class="help-text">Especificación más detallada del gasto</div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción *</label>
+                            <input type="text" id="descripcion" name="descripcion" class="form-control" 
+                                   value="{{ gasto[3] }}" required>
+                            <div class="help-text">Descripción detallada del gasto</div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Monto -->
+                            <div class="col-md-6 mb-3">
+                                <label for="monto" class="form-label">Monto *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" id="monto" name="monto" class="form-control" 
+                                           step="0.01" min="0.01" value="{{ gasto[4] }}" required>
+                                </div>
+                                <div class="help-text">Cantidad gastada en pesos</div>
+                            </div>
+
+                            <!-- Fecha -->
+                            <div class="col-md-6 mb-3">
+                                <label for="fecha" class="form-label">Fecha del Gasto *</label>
+                                <input type="date" id="fecha" name="fecha" class="form-control" 
+                                       value="{{ gasto[5] }}" required>
+                                <div class="help-text">Fecha en que se realizó el gasto</div>
+                            </div>
+                        </div>
+
+                        <!-- Comprobante -->
+                        <div class="mb-3">
+                            <label for="comprobante" class="form-label">Comprobante/Referencia</label>
+                            <input type="text" id="comprobante" name="comprobante" class="form-control" 
+                                   value="{{ gasto[8] or '' }}" placeholder="Ej: Factura #12345, Recibo de CFE">
+                            <div class="help-text">Número de factura, recibo o referencia del gasto</div>
+                        </div>
+
+                        <!-- Gasto Recurrente -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="recurrente" name="recurrente" 
+                                       {{ 'checked' if gasto[9] == 1 }}>
+                                <label class="form-check-label" for="recurrente">
+                                    <strong>🔄 Gasto Recurrente</strong>
+                                </label>
+                            </div>
+                            <div class="help-text">Marcar si este gasto se repite regularmente</div>
+                            
+                            <div id="recurrente-options" class="recurrente-options" 
+                                 {{ 'style=display:block' if gasto[9] == 1 }}>
+                                <label for="frecuencia_dias" class="form-label">Frecuencia (días)</label>
+                                <select id="frecuencia_dias" name="frecuencia_dias" class="form-select">
+                                    <option value="7" {{ 'selected' if gasto[10] == 7 }}>Semanal (7 días)</option>
+                                    <option value="15" {{ 'selected' if gasto[10] == 15 }}>Quincenal (15 días)</option>
+                                    <option value="30" {{ 'selected' if gasto[10] == 30 }}>Mensual (30 días)</option>
+                                    <option value="60" {{ 'selected' if gasto[10] == 60 }}>Bimestral (60 días)</option>
+                                    <option value="90" {{ 'selected' if gasto[10] == 90 }}>Trimestral (90 días)</option>
+                                    <option value="365" {{ 'selected' if gasto[10] == 365 }}>Anual (365 días)</option>
+                                </select>
+                                <div class="help-text">¿Cada cuánto tiempo se repite este gasto?</div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <a href="{{ url_for('gastos.lista_gastos') }}" 
+                                   class="btn btn-secondary-enhanced btn-enhanced w-100">
+                                    ← Cancelar
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" onclick="eliminarGasto()" 
+                                        class="btn btn-warning-enhanced btn-enhanced w-100">
+                                    🗑️ Eliminar
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary-enhanced btn-enhanced w-100">
+                                    💾 Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Datos de categorías y subcategorías
+const categorias = {{ categorias | tojson }};
+const gastoActual = {
+    categoria: '{{ gasto[1] }}',
+    subcategoria: '{{ gasto[2] or "" }}'
+};
+
+// Cargar subcategorías al inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    cargarSubcategorias(gastoActual.categoria, gastoActual.subcategoria);
+});
+
+// Función para cargar subcategorías
+function cargarSubcategorias(categoria, subcategoriaActual = '') {
+    const subcategoriaSelect = document.getElementById('subcategoria');
+    subcategoriaSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+    
+    if (categoria && categorias[categoria]) {
+        categorias[categoria].forEach(sub => {
+            const option = document.createElement('option');
+            option.value = sub;
+            option.textContent = sub;
+            if (sub === subcategoriaActual) {
+                option.selected = true;
+            }
+            subcategoriaSelect.appendChild(option);
+        });
+    }
+}
+
+// Manejar cambio de categoría
+document.getElementById('categoria').addEventListener('change', function() {
+    cargarSubcategorias(this.value);
+});
+
+// Manejar checkbox de recurrente
+document.getElementById('recurrente').addEventListener('change', function() {
+    const recurrenteOptions = document.getElementById('recurrente-options');
+    if (this.checked) {
+        recurrenteOptions.style.display = 'block';
+    } else {
+        recurrenteOptions.style.display = 'none';
+    }
+});
+
+// Función para eliminar gasto
+function eliminarGasto() {
+    if (confirm('¿Estás seguro de que quieres eliminar este gasto? Esta acción no se puede deshacer.')) {
+        fetch('/gastos/eliminar/{{ gasto[0] }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Gasto eliminado exitosamente');
+                window.location.href = '/gastos';
+            } else {
+                alert('Error al eliminar el gasto: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar el gasto');
+        });
+    }
+}
+
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const monto = parseFloat(document.getElementById('monto').value);
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const categoria = document.getElementById('categoria').value;
+    
+    if (!categoria) {
+        alert('Por favor selecciona una categoría');
+        e.preventDefault();
+        return;
+    }
+    
+    if (!descripcion) {
+        alert('Por favor ingresa una descripción');
+        e.preventDefault();
+        return;
+    }
+    
+    if (isNaN(monto) || monto <= 0) {
+        alert('Por favor ingresa un monto válido mayor a 0');
+        e.preventDefault();
+        return;
+    }
+    
+    // Confirmación
+    if (!confirm(`¿Confirmas los cambios del gasto "${descripcion}" por $${monto.toFixed(2)}?`)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

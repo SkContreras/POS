@@ -36,6 +36,12 @@
             <a href="{{ url_for('productos.editar_lista') }}" class="nav-link" data-page="editar">✏️ Editar</a>
             <a href="{{ url_for('productos.eliminar_producto') }}" class="nav-link" data-page="eliminar">🗑️ Eliminar</a>
             <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('main.contabilidad') }}" class="nav-link" data-page="contabilidad">📊 Contabilidad</a>
+            <a href="{{ url_for('main.historial') }}" class="nav-link" data-page="historial">📋 Historial</a>
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('gastos.lista_gastos') }}" class="nav-link" data-page="gastos">💸 Gastos</a>
+            <a href="{{ url_for('gastos.dashboard_gastos') }}" class="nav-link" data-page="gastos-dashboard">📈 Dashboard Gastos</a>
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
             <a href="{{ url_for('auth.gestionar_usuarios') }}" class="nav-link" data-page="usuarios">👥 Usuarios</a>
             <a href="{{ url_for('auth.log_acciones') }}" class="nav-link" data-page="log">📊 Log</a>
             {% endif %}

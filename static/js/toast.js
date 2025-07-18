@@ -69,6 +69,7 @@ function celebrarVenta(total) {
 // Exportar funciones para uso global
 window.toastManager = {
     mostrarToast,
+    mostrar: mostrarToast, // Alias para compatibilidad
     mostrarToastExito,
     mostrarToastError,
     mostrarToastAdvertencia,

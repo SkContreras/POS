@@ -24,8 +24,22 @@ def init_productos_routes(app, db_manager):
         """Agregar nuevo producto"""
         if request.method == 'POST':
             nombre = request.form['nombre']
-            precio = request.form['precio']
+            precio_compra = float(request.form.get('precio_compra', 0))
+            precio_venta = float(request.form['precio_venta'])
             categoria = request.form.get('categoria', 'Platillos de cocina')
+            stock = request.form.get('stock', '0')
+            
+            # Validar que el precio de venta sea mayor al precio de compra
+            if precio_venta <= precio_compra:
+                flash('El precio de venta debe ser mayor al precio de compra', 'error')
+                return render_template('agregar_producto.html')
+            
+            # Convertir stock a entero
+            try:
+                stock = int(stock)
+            except ValueError:
+                stock = 10 if categoria == 'Pescadería' else 999
+            
             file = request.files.get('fileInput')
 
             # Manejar imagen
@@ -34,14 +48,18 @@ def init_productos_routes(app, db_manager):
             else:
                 filename = 'default.png'
             
-            # Crear producto
-            producto_id = producto_model.create(nombre, precio, filename, categoria)
+            # Crear producto con precios separados
+            producto_id = producto_model.create(nombre, precio_venta, filename, categoria, stock, precio_compra)
+            
+            # Calcular margen de ganancia
+            margen = ((precio_venta - precio_compra) / precio_compra) * 100
             
             # Log de la acción
             current_user = get_current_user()
-            log_model.create(current_user['id'], f"Producto agregado: {nombre}", f"ID: {producto_id}")
+            log_model.registrar(current_user['id'], f"Producto agregado: {nombre}", 
+                              f"ID: {producto_id}, Precio compra: ${precio_compra:.2f}, Precio venta: ${precio_venta:.2f}, Margen: {margen:.1f}%, Stock inicial: {stock}")
             
-            flash(f'Producto "{nombre}" agregado exitosamente', 'success')
+            flash(f'Producto "{nombre}" agregado exitosamente. Margen de ganancia: {margen:.1f}%', 'success')
             return redirect(url_for('main.index'))
             
         return render_template('agregar_producto.html')
@@ -58,26 +76,55 @@ def init_productos_routes(app, db_manager):
 
         if request.method == "POST":
             nombre = request.form.get("nombre")
-            precio = request.form.get("precio")
+            precio_compra = float(request.form.get("precio_compra", 0))
+            precio_venta = float(request.form.get("precio_venta"))
             categoria = request.form.get("categoria", "Platillos de cocina")
+            stock = request.form.get("stock", "0")
+            
+            # Validar que el precio de venta sea mayor al precio de compra
+            if precio_venta <= precio_compra:
+                flash('El precio de venta debe ser mayor al precio de compra', 'error')
+                producto = producto_model.get_by_id(producto_id)
+                if producto:
+                    producto_dict = {
+                        "id": producto[0],
+                        "nombre": producto[1],
+                        "precio_compra": producto[2] if len(producto) > 2 else 0,
+                        "precio_venta": producto[3] if len(producto) > 3 else producto[2],  # Compatibilidad
+                        "imagen_url": producto[4] if len(producto) > 4 else producto[3],
+                        "categoria": producto[5] if len(producto) > 5 else "Platillos de cocina",
+                        "stock": producto[8] if len(producto) > 8 else 0
+                    }
+                    return render_template("edit.html", producto=producto_dict)
+            
+            # Convertir stock a entero
+            try:
+                stock = int(stock)
+            except ValueError:
+                stock = 0
+            
             file = request.files.get("fileInput")
 
             # Obtener imagen actual
             producto_actual = producto_model.get_by_id(producto_id)
-            imagen_url = producto_actual[3] if producto_actual else "default.png"
+            imagen_url = producto_actual[4] if len(producto_actual) > 4 else "default.png"
 
             # Manejar nueva imagen si se subió
             if file and file.filename and allowed_file(file.filename, app.config['ALLOWED_EXTENSIONS']):
                 imagen_url = save_uploaded_file(file, app.config['UPLOAD_FOLDER'], producto_id)
 
-            # Actualizar producto
-            producto_model.update(producto_id, nombre, precio, imagen_url, categoria)
+            # Actualizar producto con precios separados
+            producto_model.update(producto_id, nombre, precio_venta, imagen_url, categoria, stock, precio_compra)
+            
+            # Calcular margen de ganancia
+            margen = ((precio_venta - precio_compra) / precio_compra) * 100 if precio_compra > 0 else 0
             
             # Log de la acción
             current_user = get_current_user()
-            log_model.create(current_user['id'], f"Producto editado: {nombre}", f"ID: {producto_id}")
+            log_model.registrar(current_user['id'], f"Producto editado: {nombre}", 
+                              f"ID: {producto_id}, Precio compra: ${precio_compra:.2f}, Precio venta: ${precio_venta:.2f}, Margen: {margen:.1f}%, Stock: {stock}")
             
-            flash("Producto actualizado con éxito.", 'success')
+            flash(f"Producto actualizado con éxito. Margen de ganancia: {margen:.1f}%", 'success')
             return redirect(url_for("main.index"))
 
         else:
@@ -87,9 +134,11 @@ def init_productos_routes(app, db_manager):
                 producto_dict = {
                     "id": producto[0],
                     "nombre": producto[1],
-                    "precio": producto[2],
-                    "imagen_url": producto[3],
-                    "categoria": producto[4] if len(producto) > 4 else "Platillos de cocina"
+                    "precio_compra": producto[2] if len(producto) > 2 else 0,
+                    "precio_venta": producto[3] if len(producto) > 3 else producto[2],  # Compatibilidad con estructura antigua
+                    "imagen_url": producto[4] if len(producto) > 4 else producto[3],
+                    "categoria": producto[5] if len(producto) > 5 else "Platillos de cocina",
+                    "stock": producto[8] if len(producto) > 8 else 0
                 }
                 return render_template("edit.html", producto=producto_dict)
             else:
@@ -118,7 +167,7 @@ def init_productos_routes(app, db_manager):
                 
                 # Log de la acción
                 current_user = get_current_user()
-                log_model.create(current_user['id'], f"Producto eliminado: {producto[1]}", f"ID: {producto_id}")
+                log_model.registrar(current_user['id'], f"Producto eliminado: {producto[1]}", f"ID: {producto_id}")
                 
                 flash(f'Producto "{producto[1]}" eliminado exitosamente', 'success')
             else:

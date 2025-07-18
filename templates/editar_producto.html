@@ -6,7 +6,7 @@
     <div class="producto">
         <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="Imagen de {{ p[1] }}">
         <h4>{{ p[1] }}</h4>
-        <p>${{ "%.2f"|format(p[2]) }}</p>
+        <p>${{ "%.2f"|format(p[3] if p|length > 3 else p[2]) }}</p>
         <form method="get" action="{{ url_for('productos.editar_producto') }}">
             <input type="hidden" name="producto_id" value="{{ p[0] }}">
             <button class="editar-btn" type="submit">Editar</button>

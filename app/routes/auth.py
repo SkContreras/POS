@@ -34,7 +34,7 @@ def init_auth_routes(app, db_manager):
                 create_session(user_info)
                 
                 # Log de inicio de sesión
-                log_model.create(user_data[0], f"Inicio de sesión - {user_data[2]}")
+                log_model.registrar(user_data[0], f"Inicio de sesión - {user_data[2]}")
                 flash(f'Bienvenido, {user_data[3]}!', 'success')
                 return redirect(url_for('main.index'))
             else:
@@ -47,7 +47,7 @@ def init_auth_routes(app, db_manager):
         """Cerrar sesión"""
         current_user = get_current_user()
         if current_user:
-            log_model.create(current_user['id'], "Cierre de sesión")
+            log_model.registrar(current_user['id'], "Cierre de sesión")
         
         clear_session()
         flash('Sesión cerrada correctamente', 'info')
@@ -97,7 +97,7 @@ def init_auth_routes(app, db_manager):
             usuario_model.create(usuario, password_hash, rol, nombre_completo)
             
             current_user = get_current_user()
-            log_model.create(current_user['id'], f"Usuario creado: {usuario} ({rol})")
+            log_model.registrar(current_user['id'], f"Usuario creado: {usuario} ({rol})")
             flash(f'Usuario "{nombre_completo}" creado exitosamente', 'success')
         except sqlite3.IntegrityError:
             flash('El nombre de usuario ya existe', 'error')
@@ -120,7 +120,7 @@ def init_auth_routes(app, db_manager):
             usuario_model.update_status(user_id, nuevo_estado)
             
             estado_texto = "activado" if nuevo_estado else "desactivado"
-            log_model.create(current_user['id'], f"Usuario {estado_texto}: {user_data[1]}")
+            log_model.registrar(current_user['id'], f"Usuario {estado_texto}: {user_data[1]}")
             flash(f'Usuario {user_data[1]} {estado_texto}', 'success')
         
         return redirect(url_for('auth.gestionar_usuarios'))
@@ -216,7 +216,7 @@ def init_auth_routes(app, db_manager):
             if new_password_hash:
                 cambios.append("contraseña actualizada")
             
-            log_model.create(current_user['id'], f"Credenciales actualizadas: {', '.join(cambios)}")
+            log_model.registrar(current_user['id'], f"Credenciales actualizadas: {', '.join(cambios)}")
             
             flash('Credenciales actualizadas exitosamente', 'success')
             

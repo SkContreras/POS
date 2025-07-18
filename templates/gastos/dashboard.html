@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+{% block title %}Dashboard de Gastos{% endblock %}
+
+{% block head %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Chart.js para gráficas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- CSS personalizado para gastos -->
+<style>
+.dashboard-container {
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    border-radius: 15px;
+}
+
+.stats-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 15px;
+}
+
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+.chart-container canvas {
+    max-height: 280px !important;
+}
+
+.recurrente-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.categoria-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.categoria-servicios { background: #e3f2fd; color: #1976d2; }
+.categoria-transporte { background: #f3e5f5; color: #7b1fa2; }
+.categoria-perdidas { background: #ffebee; color: #d32f2f; }
+.categoria-mantenimiento { background: #e8f5e8; color: #388e3c; }
+.categoria-personal { background: #fff3e0; color: #f57c00; }
+.categoria-impuestos { background: #fce4ec; color: #c2185b; }
+.categoria-suministros { background: #e0f2f1; color: #00695c; }
+.categoria-marketing { background: #f9fbe7; color: #689f38; }
+.categoria-otros { background: #f5f5f5; color: #616161; }
+
+.btn-enhanced {
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary-enhanced {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.recurrente-item {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.alert-custom {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Header Principal -->
+    <div class="card header-gradient mb-4">
+        <div class="card-body text-center">
+            <h2 class="mb-3">📈 Dashboard de Gastos Operativos</h2>
+            <p class="mb-0">Análisis detallado de los gastos del negocio para el período {{ fecha_inicio }} - {{ fecha_fin }}</p>
+        </div>
+    </div>
+
+    <!-- Controles de Período -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">📅 Seleccionar Período</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('gastos.dashboard_gastos') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" 
+                           value="{{ fecha_inicio }}">
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="fecha_fin" class="form-label">Fecha Fin:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" 
+                           value="{{ fecha_fin }}">
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary-enhanced btn-enhanced">
+                        🔍 Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body metric-card">
+                    <div class="stats-icon bg-danger text-white">💸</div>
+                    <h3 class="metric-value text-danger">${{ "%.2f"|format(estadisticas.gastos_totales or 0) }}</h3>
+                    <p class="metric-label">Total de Gastos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body metric-card">
+                    <div class="stats-icon bg-warning text-white">📊</div>
+                    <h3 class="metric-value text-warning">{{ estadisticas.total_gastos or 0 }}</h3>
+                    <p class="metric-label">Número de Gastos</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body metric-card">
+                    <div class="stats-icon bg-info text-white">📈</div>
+                    <h3 class="metric-value text-info">${{ "%.2f"|format(estadisticas.gasto_promedio or 0) }}</h3>
+                    <p class="metric-label">Promedio por Gasto</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body metric-card">
+                    <div class="stats-icon bg-primary text-white">⚡</div>
+                    <h3 class="metric-value text-primary">${{ "%.2f"|format(estadisticas.gasto_maximo or 0) }}</h3>
+                    <p class="metric-label">Gasto Máximo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="row mb-4">
+        <!-- Gastos por Categoría -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">💸 Gastos por Categoría</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="gastosCategoriaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evolución de Gastos -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📅 Evolución de Gastos por Día</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="gastosTiempoChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen por Categoría y Gastos Recurrentes -->
+    <div class="row mb-4">
+        <!-- Resumen por Categoría -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📊 Resumen por Categoría</h6>
+                </div>
+                <div class="card-body">
+                    {% if gastos_por_categoria %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                    <th>% del Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total_general = gastos_por_categoria | sum(attribute='total') %}
+                                {% for categoria in gastos_por_categoria %}
+                                <tr>
+                                    <td>
+                                        <span class="categoria-badge categoria-{{ categoria.categoria.lower().replace(' ', '') }}">
+                                            {{ categoria.categoria }}
+                                        </span>
+                                    </td>
+                                    <td>{{ categoria.cantidad }}</td>
+                                    <td class="text-danger fw-bold">${{ "%.2f"|format(categoria.total) }}</td>
+                                    <td>
+                                        {% set porcentaje = (categoria.total / total_general * 100) if total_general > 0 else 0 %}
+                                        {{ "%.1f"|format(porcentaje) }}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No hay gastos por categoría para mostrar</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Gastos Recurrentes -->
+        <div class="col-md-4">
+            <div class="card recurrente-card">
+                <div class="card-header">
+                    <h6 class="mb-0">🔄 Gastos Recurrentes</h6>
+                </div>
+                <div class="card-body">
+                    {% if gastos_recurrentes %}
+                    {% for gasto in gastos_recurrentes %}
+                    <div class="recurrente-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ gasto[3] }}</strong>
+                                <br><small>{{ gasto[1] }}</small>
+                            </div>
+                            <div class="text-end">
+                                <strong>${{ "%.2f"|format(gasto[4]) }}</strong>
+                                <br><small>Cada {{ gasto[10] }} días</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="mb-0">No hay gastos recurrentes configurados</p>
+                        <small>Los gastos recurrentes te ayudan a planificar mejor</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertas y Recomendaciones -->
+    {% if estadisticas.gastos_totales > 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-custom alert-info">
+                <h6 class="alert-heading">💡 Análisis de Gastos</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <strong>Gasto Diario Promedio:</strong><br>
+                        ${{ "%.2f"|format((estadisticas.gastos_totales or 0) / 30) }}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Categoría Principal:</strong><br>
+                        {% if gastos_por_categoria %}
+                        {{ gastos_por_categoria[0].categoria }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Recomendación:</strong><br>
+                        {% if estadisticas.gastos_totales > 10000 %}
+                        Considerar optimización de gastos
+                        {% elif estadisticas.gastos_totales > 5000 %}
+                        Gastos en rango normal
+                        {% else %}
+                        Excelente control de gastos
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Botones de Acción -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('gastos.lista_gastos') }}" class="btn btn-primary-enhanced btn-enhanced me-2">
+                📋 Ver Todos los Gastos
+            </a>
+            <a href="{{ url_for('gastos.agregar_gasto') }}" class="btn btn-primary-enhanced btn-enhanced">
+                ➕ Nuevo Gasto
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Datos para las gráficas
+const gastosPorCategoria = {{ gastos_por_categoria | tojson }};
+const gastosPorDia = {{ gastos_por_dia | tojson }};
+
+// Gráfica de gastos por categoría
+if (gastosPorCategoria && gastosPorCategoria.length > 0) {
+    const ctx1 = document.getElementById('gastosCategoriaChart').getContext('2d');
+    
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: gastosPorCategoria.map(item => item.categoria),
+            datasets: [{
+                data: gastosPorCategoria.map(item => item.total),
+                backgroundColor: [
+                    '#dc3545', '#fd7e14', '#ffc107', '#6c757d',
+                    '#6f42c1', '#0d6efd', '#198754', '#d63384'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Gráfica de evolución temporal
+if (gastosPorDia && gastosPorDia.length > 0) {
+    const ctx2 = document.getElementById('gastosTiempoChart').getContext('2d');
+    
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: gastosPorDia.map(item => item.fecha),
+            datasets: [{
+                label: 'Gastos Diarios',
+                data: gastosPorDia.map(item => item.total),
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toFixed(2);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

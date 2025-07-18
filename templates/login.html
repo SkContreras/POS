@@ -229,6 +229,15 @@
             {% endif %}
         {% endwith %}
 
+        <!-- Advertencia de seguridad para campos de contraseña en HTTP -->
+        {% if g and g.password_security_warning %}
+        <div class="alert alert-error">
+            <strong>⚠️ ADVERTENCIA DE SEGURIDAD:</strong><br>
+            Esta página contiene campos de contraseña transmitidos de forma insegura (HTTP). 
+            Para mayor seguridad, configure HTTPS en el servidor.
+        </div>
+        {% endif %}
+
         <form method="POST">
             <div class="form-group">
                 <label for="usuario">👤 Usuario</label>

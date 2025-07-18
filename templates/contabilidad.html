@@ -1,0 +1,843 @@
+{% extends "base.html" %}
+{% block title %}Contabilidad{% endblock %}
+
+{% block head %}
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Chart.js para gráficas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- CSS personalizado para contabilidad -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/contabilidad.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="contabilidad-container">
+    <!-- Header Principal -->
+    <div class="card header-gradient mb-4">
+        <div class="card-body text-center">
+            <h2 class="mb-3">📊 Panel de Contabilidad</h2>
+            <p class="mb-0">Análisis financiero y estadísticas del negocio</p>
+        </div>
+    </div>
+
+    <!-- Controles y Filtros -->
+    <div class="card filters-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">🔍 Filtros y Controles</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('main.contabilidad') }}" class="row g-3">
+                <div class="col-md-3">
+                    <label for="periodo" class="form-label">Período:</label>
+                    <select id="periodo" name="periodo" class="form-select">
+                        <option value="dia" {{ 'selected' if periodo == 'dia' }}>Hoy</option>
+                        <option value="semana" {{ 'selected' if periodo == 'semana' }}>Esta Semana</option>
+                        <option value="mes" {{ 'selected' if periodo == 'mes' }}>Este Mes</option>
+                        <option value="año" {{ 'selected' if periodo == 'año' }}>Este Año</option>
+                        <option value="rango" {{ 'selected' if periodo == 'rango' }}>Rango Personalizado</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" 
+                           value="{{ fecha_inicio or '' }}">
+                </div>
+                
+                <div class="col-md-3">
+                    <label for="fecha_fin" class="form-label">Fecha Fin:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" 
+                           value="{{ fecha_fin or '' }}">
+                </div>
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary-enhanced btn-enhanced me-2">
+                        🔍 Filtrar
+                    </button>
+                    <button type="button" id="actualizar-btn" class="btn btn-success-enhanced btn-enhanced">
+                        🔄 Actualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card stats-card primary hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-primary text-white">💰</div>
+                    <h4 class="card-title">${{ "%.2f"|format(resumen_financiero.ingresos_totales or 0) }}</h4>
+                    <p class="card-text">Ingresos Totales</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card stats-card danger hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-danger text-white">🏷️</div>
+                    <h4 class="card-title">${{ "%.2f"|format(resumen_financiero.costos_totales or 0) }}</h4>
+                    <p class="card-text">Costos Totales</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card stats-card success hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-success text-white">📈</div>
+                    <h4 class="card-title">${{ "%.2f"|format(resumen_financiero.ganancia_bruta or 0) }}</h4>
+                    <p class="card-text">Ganancia Bruta</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card stats-card warning hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-warning text-dark">�</div>
+                    <h4 class="card-title">{{ "%.1f"|format(resumen_financiero.margen_bruto or 0) }}%</h4>
+                    <p class="card-text">Margen Bruto</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card stats-card info hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-info text-white">🎯</div>
+                    <h4 class="card-title">{{ "%.1f"|format(resumen_financiero.roi or 0) }}%</h4>
+                    <p class="card-text">ROI</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-2">
+            <div class="card stats-card secondary hover-lift">
+                <div class="card-body text-center">
+                    <div class="stats-icon bg-secondary text-white">📦</div>
+                    <h4 class="card-title">{{ resumen_financiero.productos_vendidos or 0 }}</h4>
+                    <p class="card-text">Productos Vendidos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Herramientas -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <button type="button" id="herramientas-btn" class="btn btn-tool btn-margen me-2" 
+                    data-bs-toggle="modal" data-bs-target="#herramientasModal">
+                🧮 Herramientas
+            </button>
+            <button type="button" id="exportar-btn" class="btn btn-tool btn-proyeccion me-2" 
+                    data-bs-toggle="modal" data-bs-target="#exportarModal">
+                📄 Exportar
+            </button>
+            <button type="button" id="guardar-recibos-btn" class="btn btn-tool btn-rentabilidad" 
+                    data-bs-toggle="modal" data-bs-target="#recibosModal">
+                🧾 Recibos PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="row mb-4">
+        <!-- Ventas por Día -->
+        <div class="col-md-6">
+            <div class="card chart-container">
+                <div class="chart-header">
+                    <h6 class="chart-title">📊 Ventas por Día</h6>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm chart-toggle-btn" onclick="toggleChartType('ventasPorDiaChart', 'bar')">Barras</button>
+                        <button class="btn btn-sm chart-toggle-btn" onclick="toggleChartType('ventasPorDiaChart', 'line')">Línea</button>
+                    </div>
+                </div>
+                <canvas id="ventasPorDiaChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <!-- Productos Más Vendidos -->
+        <div class="col-md-6">
+            <div class="card chart-container">
+                <div class="chart-header">
+                    <h6 class="chart-title">🏆 Productos Más Vendidos</h6>
+                    <div class="chart-controls">
+                        <button class="btn btn-sm chart-toggle-btn" onclick="toggleChartType('productosMasVendidosChart', 'bar')">Barras</button>
+                        <button class="btn btn-sm chart-toggle-btn" onclick="toggleChartType('productosMasVendidosChart', 'doughnut')">Dona</button>
+                    </div>
+                </div>
+                <canvas id="productosMasVendidosChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Ventas por Hora -->
+        <div class="col-md-6">
+            <div class="card chart-container">
+                <div class="chart-header">
+                    <h6 class="chart-title">🕐 Ventas por Hora</h6>
+                </div>
+                <canvas id="ventasPorHoraChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <!-- Ingresos por Categoría -->
+        <div class="col-md-6">
+            <div class="card chart-container">
+                <div class="chart-header">
+                    <h6 class="chart-title">📂 Ingresos por Categoría</h6>
+                </div>
+                <canvas id="ingresosPorCategoriaChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventas por Mes (gráfica completa) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card chart-container">
+                <div class="chart-header">
+                    <h6 class="chart-title">📅 Evolución Mensual de Ventas</h6>
+                </div>
+                <canvas id="ventasPorMesChart" width="400" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablas de Datos -->
+    <div class="row mb-4">
+        <!-- Productos Top Rentabilidad -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">🏆 Top Productos por Rentabilidad</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Ganancia</th>
+                                    <th>Margen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in analisis_rentabilidad[:10] %}
+                                <tr>
+                                    <td class="fw-medium">{{ producto.nombre }}</td>
+                                    <td class="text-success fw-semibold">${{ "%.2f"|format(producto.ganancia_real) }}</td>
+                                    <td>
+                                        <span class="badge {% if producto.margen_porcentaje >= 30 %}bg-success{% elif producto.margen_porcentaje >= 15 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(producto.margen_porcentaje) }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay datos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Productos que Necesitan Atención -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">⚠️ Productos con Margen Bajo</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Margen</th>
+                                    <th>Recomendación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos_menos_rentables[:10] %}
+                                <tr>
+                                    <td class="fw-medium">{{ producto.nombre }}</td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ "%.1f"|format(producto.margen_porcentaje) }}%</span>
+                                    </td>
+                                    <td class="small text-muted">{{ producto.recomendacion }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-success">¡Todos los productos tienen margen aceptable!</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Análisis por Categoría -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📊 Análisis de Rentabilidad por Categoría</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Ingresos</th>
+                                    <th>Costos</th>
+                                    <th>Ganancia</th>
+                                    <th>Margen</th>
+                                    <th>Productos Vendidos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categoria in analisis_por_categoria %}
+                                <tr>
+                                    <td class="fw-medium">
+                                        {% if categoria.categoria == 'Pescadería' %}🐟{% else %}🍽️{% endif %} 
+                                        {{ categoria.categoria }}
+                                    </td>
+                                    <td class="text-primary fw-semibold">${{ "%.2f"|format(categoria.ingresos) }}</td>
+                                    <td class="text-danger">${{ "%.2f"|format(categoria.costos) }}</td>
+                                    <td class="text-success fw-semibold">${{ "%.2f"|format(categoria.ganancia) }}</td>
+                                    <td>
+                                        <span class="badge {% if categoria.margen_porcentaje >= 30 %}bg-success{% elif categoria.margen_porcentaje >= 15 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(categoria.margen_porcentaje) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ categoria.productos_vendidos }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No hay datos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablas de Datos Adicionales -->
+    <div class="row mb-4">
+        <!-- Productos Top Ventas -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">🏆 Top 10 Productos por Ventas</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Vendidos</th>
+                                    <th>Ingresos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for producto in productos_mas_vendidos[:10] %}
+                                <tr>
+                                    <td class="fw-medium">{{ producto.nombre }}</td>
+                                    <td>{{ producto.cantidad }}</td>
+                                    <td class="text-success fw-semibold">${{ "%.2f"|format(producto.total_ingresos) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay datos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resumen por Días -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">📅 Resumen por Días</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Ventas</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venta in ventas_por_dia[:10] %}
+                                <tr>
+                                    <td>{{ venta.fecha }}</td>
+                                    <td>{{ venta.cantidad }}</td>
+                                    <td class="text-success fw-semibold">${{ "%.2f"|format(venta.total) }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">No hay datos disponibles</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Herramientas -->
+<div class="modal fade modal-enhanced" id="herramientasModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🧮 Herramientas de Contabilidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="mostrarAnalisisRentabilidad()">
+                            📊 Análisis de Rentabilidad Detallado
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="calculadoraPrecios()">
+                            🧮 Calculadora de Precios Óptimos
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="simuladorMargen()">
+                            📈 Simulador de Márgenes
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="alertaProductos()">
+                            ⚠️ Alertas de Productos
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="proyeccionVentas()">
+                            � Proyección de Ventas
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-tool w-100" onclick="comparativoPeriodos()">
+                            � Comparativo de Períodos
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Exportar -->
+<div class="modal fade modal-enhanced" id="exportarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📄 Exportar Datos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label for="formato_exportar" class="form-label">Formato:</label>
+                        <select id="formato_exportar" class="form-select">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluirGraficas" checked>
+                            <label class="form-check-label" for="incluirGraficas">Incluir Gráficas</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluirDetalles" checked>
+                            <label class="form-check-label" for="incluirDetalles">Incluir Detalles</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluirResumen" checked>
+                            <label class="form-check-label" for="incluirResumen">Incluir Resumen</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="exportarDatos()">Exportar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Recibos -->
+<div class="modal fade modal-enhanced" id="recibosModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🧾 Generar Recibos PDF</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="recibosForm">
+                    <div class="mb-3">
+                        <label for="fecha_inicio_recibos" class="form-label">Fecha Inicio:</label>
+                        <input type="date" id="fecha_inicio_recibos" class="form-control" value="{{ fecha_inicio }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fecha_fin_recibos" class="form-label">Fecha Fin:</label>
+                        <input type="date" id="fecha_fin_recibos" class="form-control" value="{{ fecha_fin }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="incluirDesglose" checked>
+                            <label class="form-check-label" for="incluirDesglose">Incluir Desglose de Productos</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="generarRecibosPDF()">Generar PDFs</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JavaScript de Contabilidad -->
+<script>
+// Datos del servidor para las gráficas
+const serverData = {
+    ventas_por_dia: {{ ventas_por_dia | tojson | safe }},
+    ventas_por_hora: {{ ventas_por_hora | tojson | safe }},
+    ventas_por_mes: {{ ventas_por_mes | tojson | safe }},
+    productos_mas_vendidos: {{ productos_mas_vendidos | tojson | safe }},
+    ingresos_por_categoria: {{ ingresos_por_categoria | tojson | safe }},
+    estadisticas: {{ estadisticas | tojson | safe }},
+    // ✨ NUEVOS: Datos de rentabilidad
+    analisis_rentabilidad: {{ analisis_rentabilidad | tojson | safe }},
+    resumen_financiero: {{ resumen_financiero | tojson | safe }},
+    productos_menos_rentables: {{ productos_menos_rentables | tojson | safe }},
+    analisis_por_categoria: {{ analisis_por_categoria | tojson | safe }}
+};
+
+console.log('📊 Datos del servidor cargados:', serverData);
+</script>
+
+<script src="{{ url_for('static', filename='js/contabilidad.js') }}"></script>
+
+<script>
+// Inicializar la página cuando todo esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando página de contabilidad...');
+    
+    // Verificar que las funciones estén disponibles
+    if (typeof window.initializeContabilidadPage === 'function') {
+        window.initializeContabilidadPage(serverData);
+    } else {
+        console.warn('⚠️ Función initializeContabilidadPage no encontrada, intentando inicialización manual...');
+        
+        // Intentar inicialización manual después de un delay
+        setTimeout(() => {
+            if (typeof window.initializeChartData === 'function' && typeof window.initializeCharts === 'function') {
+                window.initializeChartData(serverData);
+                window.initializeCharts();
+                console.log('✅ Inicialización manual exitosa');
+            } else {
+                console.error('❌ No se pudieron inicializar las gráficas');
+            }
+        }, 1000);
+    }
+});
+
+// ✨ NUEVAS HERRAMIENTAS DE RENTABILIDAD
+
+function mostrarAnalisisRentabilidad() {
+    const analisis = serverData.analisis_rentabilidad;
+    
+    let html = `
+        <div class="modal fade" id="analisisRentabilidadModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📊 Análisis Detallado de Rentabilidad</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Vendidos</th>
+                                        <th>Precio Compra</th>
+                                        <th>Precio Venta</th>
+                                        <th>Ingresos</th>
+                                        <th>Costos</th>
+                                        <th>Ganancia</th>
+                                        <th>Margen %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+    
+    analisis.forEach(producto => {
+        const margenClass = producto.margen_porcentaje >= 30 ? 'success' : 
+                           producto.margen_porcentaje >= 15 ? 'warning' : 'danger';
+        
+        html += `
+                                    <tr>
+                                        <td class="fw-bold">${producto.nombre}</td>
+                                        <td>${producto.cantidad_vendida}</td>
+                                        <td class="text-danger">$${producto.precio_compra_promedio}</td>
+                                        <td class="text-primary">$${producto.precio_venta_promedio}</td>
+                                        <td class="text-info">$${producto.ingresos_totales}</td>
+                                        <td class="text-danger">$${producto.costos_totales}</td>
+                                        <td class="text-success fw-bold">$${producto.ganancia_real}</td>
+                                        <td><span class="badge bg-${margenClass}">${producto.margen_porcentaje}%</span></td>
+                                    </tr>`;
+    });
+    
+    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    // Eliminar modal existente y agregar nuevo
+    const existingModal = document.getElementById('analisisRentabilidadModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    new bootstrap.Modal(document.getElementById('analisisRentabilidadModal')).show();
+}
+
+function calculadoraPrecios() {
+    let html = `
+        <div class="modal fade" id="calculadoraPreciosModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">🧮 Calculadora de Precios Óptimos</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Precio de Compra:</label>
+                                <input type="number" id="precioCompraCalc" class="form-control" placeholder="0.00" step="0.01">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Margen Deseado (%):</label>
+                                <input type="number" id="margenDeseado" class="form-control" placeholder="30" min="0" max="500">
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" onclick="calcularPrecioOptimo()">Calcular</button>
+                            </div>
+                            <div class="col-12">
+                                <div id="resultadoCalculo" class="alert alert-info" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    const existingModal = document.getElementById('calculadoraPreciosModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    new bootstrap.Modal(document.getElementById('calculadoraPreciosModal')).show();
+}
+
+function calcularPrecioOptimo() {
+    const precioCompra = parseFloat(document.getElementById('precioCompraCalc').value) || 0;
+    const margenDeseado = parseFloat(document.getElementById('margenDeseado').value) || 0;
+    
+    if (precioCompra <= 0 || margenDeseado <= 0) {
+        alert('Por favor ingresa valores válidos');
+        return;
+    }
+    
+    const precioVenta = precioCompra * (1 + margenDeseado / 100);
+    const ganancia = precioVenta - precioCompra;
+    
+    const resultado = document.getElementById('resultadoCalculo');
+    resultado.innerHTML = `
+        <h6>🎯 Resultado:</h6>
+        <strong>Precio de Venta Sugerido:</strong> $${precioVenta.toFixed(2)}<br>
+        <strong>Ganancia por Unidad:</strong> $${ganancia.toFixed(2)}<br>
+        <strong>Margen:</strong> ${margenDeseado}%
+    `;
+    resultado.style.display = 'block';
+}
+
+function simuladorMargen() {
+    const productos = serverData.productos_menos_rentables;
+    
+    let html = `
+        <div class="modal fade" id="simuladorMargenModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">📈 Simulador de Márgenes</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">🎯 <strong>Productos que necesitan ajuste de precio:</strong></p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Precio Actual</th>
+                                        <th>Margen Actual</th>
+                                        <th>Precio Sugerido (30%)</th>
+                                        <th>Impacto</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+    
+    productos.forEach(producto => {
+        const precioSugerido = producto.precio_compra * 1.3;
+        const incremento = precioSugerido - producto.precio_venta;
+        
+        html += `
+                                    <tr>
+                                        <td class="fw-bold">${producto.nombre}</td>
+                                        <td>$${producto.precio_venta}</td>
+                                        <td><span class="badge bg-danger">${producto.margen_porcentaje}%</span></td>
+                                        <td class="text-success">$${precioSugerido.toFixed(2)}</td>
+                                        <td class="text-warning">+$${incremento.toFixed(2)}</td>
+                                    </tr>`;
+    });
+    
+    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    const existingModal = document.getElementById('simuladorMargenModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    new bootstrap.Modal(document.getElementById('simuladorMargenModal')).show();
+}
+
+function alertaProductos() {
+    const resumen = serverData.resumen_financiero;
+    const productosProblema = serverData.productos_menos_rentables;
+    
+    const alertas = [];
+    
+    if (resumen.margen_bruto < 20) {
+        alertas.push({
+            tipo: 'danger',
+            mensaje: `⚠️ Margen bruto general muy bajo: ${resumen.margen_bruto}%`
+        });
+    }
+    
+    if (productosProblema.length > 0) {
+        alertas.push({
+            tipo: 'warning',
+            mensaje: `📉 ${productosProblema.length} productos con margen inferior al 20%`
+        });
+    }
+    
+    if (resumen.roi < 15) {
+        alertas.push({
+            tipo: 'warning',
+            mensaje: `📊 ROI bajo: ${resumen.roi}% - Considera revisar precios`
+        });
+    }
+    
+    let html = `
+        <div class="modal fade" id="alertasModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">⚠️ Alertas del Sistema</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">`;
+    
+    if (alertas.length === 0) {
+        html += '<div class="alert alert-success">✅ ¡Todo está en orden! No hay alertas.</div>';
+    } else {
+        alertas.forEach(alerta => {
+            html += `<div class="alert alert-${alerta.tipo}">${alerta.mensaje}</div>`;
+        });
+    }
+    
+    html += `
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    
+    const existingModal = document.getElementById('alertasModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', html);
+    new bootstrap.Modal(document.getElementById('alertasModal')).show();
+}
+
+// Funciones existentes (stubs para compatibilidad)
+function proyeccionVentas() {
+    alert('🚧 Función en desarrollo - Próximamente disponible');
+}
+
+function comparativoPeriodos() {
+    alert('🚧 Función en desarrollo - Próximamente disponible');
+}
+
+function exportarDatos() {
+    alert('🚧 Función en desarrollo - Próximamente disponible');
+}
+
+function generarRecibosPDF() {
+    alert('🚧 Función en desarrollo - Próximamente disponible');
+}
+</script>
+{% endblock %}

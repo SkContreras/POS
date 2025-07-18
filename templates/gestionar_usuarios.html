@@ -22,6 +22,15 @@
         {% endif %}
     {% endwith %}
 
+    <!-- Advertencia de seguridad para campos de contraseña en HTTP -->
+    {% if g and g.password_security_warning %}
+    <div class="alert alert-danger" style="margin-bottom: 20px; padding: 12px; border-radius: 6px; background-color: #fee; color: #c33; border: 1px solid #fcc;">
+        <strong>⚠️ ADVERTENCIA DE SEGURIDAD:</strong><br>
+        Esta página contiene campos de contraseña transmitidos de forma insegura (HTTP). 
+        Para mayor seguridad, configure HTTPS en el servidor.
+    </div>
+    {% endif %}
+
     <!-- Formulario para crear nuevo usuario -->
     <div class="card" style="background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 25px;">
         <h3 style="margin-bottom: 20px; color: #333;">➕ Crear Nuevo Usuario</h3>

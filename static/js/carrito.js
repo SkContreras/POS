@@ -1,6 +1,9 @@
 // Módulo para el manejo del carrito de compras
 let carrito = [];
 
+// Exponer carrito globalmente para que otros módulos puedan accederlo
+window.carrito = carrito;
+
 function agregarAlCarrito(id, nombre, precio) {
     // Verificar que el modal manager esté disponible antes de usarlo
     if (window.modalManager && window.modalManager.mostrarModalCantidad) {
@@ -30,10 +33,14 @@ function confirmarAgregarAlCarrito(id, nombre, precio, cantidad) {
 
 function eliminarDelCarrito(idx) {
     carrito.splice(idx, 1);
+    window.carrito = carrito; // Sincronizar con la referencia global
     actualizarCarrito();
 }
 
 function actualizarCarrito() {
+    // Sincronizar con la referencia global
+    window.carrito = carrito;
+    
     let total = 0;
     const lista = document.getElementById("carrito");
     lista.innerHTML = "";
@@ -136,7 +143,35 @@ async function finalizarVenta() {
                 }
             }
             carrito = [];
+            window.carrito = carrito;
             actualizarCarrito();
+            
+            // Actualizar indicador de stock sin recargar toda la página
+            setTimeout(() => {
+                if (window.verificarStockBajo) {
+                    window.verificarStockBajo();
+                }
+                // Solo recargar si es necesario (después de más tiempo)
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            }, 1000);
+            
+        } else if (data.status === "error") {
+            // Manejar errores de stock
+            if (window.mostrarConfirmacion) {
+                await window.mostrarConfirmacion('error',
+                    '❌ Error en la venta',
+                    `<strong>No se pudo completar la venta:</strong><br>${data.message}`,
+                    { soloOk: true, textoOk: 'Entendido' }
+                );
+            } else if (window.confirmacionManager) {
+                await window.confirmacionManager.mostrarError(
+                    `No se pudo completar la venta:<br>${data.message}`
+                );
+            } else {
+                mostrarToastSeguro(`❌ ${data.message}`, "error");
+            }
         } else {
             throw new Error('Error del servidor');
         }
@@ -190,6 +225,7 @@ function mostrarToastSeguro(mensaje, tipo) {
 
 function vaciarCarrito() {
     carrito = [];
+    window.carrito = carrito;
     actualizarCarrito();
 }
 

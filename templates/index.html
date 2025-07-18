@@ -56,7 +56,10 @@
             <p>Total: $<span id="total">0.00</span></p>
             <button class="cart-btn" onclick="finalizarVenta()">Finalizar Venta</button>
             <hr>
-            <a href="{{ url_for('main.historial') }}">Ver Historial</a>
+            <a href="{{ url_for('main.historial') }}">📋 Ver Historial</a>
+            {% if session.rol == 'administrador' %}
+            <a href="{{ url_for('main.contabilidad') }}" style="margin-top: 10px; display: block; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; text-align: center; font-weight: bold; transition: all 0.3s ease;">📊 Contabilidad</a>
+            {% endif %}
         </div>
     </div>
 
@@ -99,22 +102,39 @@
     <div class="container">
         <div class="menu" id="menuProductos">
             {% for p in productos %}
-            <div class="producto"
+            <div class="producto{% if p|length > 8 and p[8] <= 5 and (p|length > 5 and p[5] == 'Pescadería') %} stock-bajo{% elif p|length > 8 and p[8] == 0 %} sin-stock{% endif %}"
                  data-id="{{ p[0] }}"
                  data-nombre="{{ p[1] }}"
-                 data-precio="{{ p[2] }}"
-                 data-categoria="{{ p[4] if p|length > 4 else 'Platillos de cocina' }}">
-                <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="{{ p[1] }}">
+                 data-precio="{{ p[3] }}"
+                 data-categoria="{{ p[5] if p|length > 5 else 'Platillos de cocina' }}"
+                 data-stock="{{ p[8] if p|length > 8 else 999 }}">
+                <img src="{{ url_for('static', filename='img/' ~ p[4]) }}" alt="{{ p[1] }}">
                 <div class="producto-info">
                     <div class="categoria-badge">
-                        {% if p|length > 4 and p[4] == 'Pescadería' %}
+                        {% if p|length > 5 and p[5] == 'Pescadería' %}
                             <span class="categoria pescaderia">🐟 Pescadería</span>
                         {% else %}
                             <span class="categoria cocina">🍽️ Cocina</span>
                         {% endif %}
                     </div>
+                    
+                    <!-- Indicador de stock -->
+                    {% if p|length > 8 %}
+                        <div class="stock-info">
+                            {% if p[5] == 'Pescadería' %}
+                                {% if p[8] == 0 %}
+                                    <span class="stock sin-stock">🚫 Agotado</span>
+                                {% elif p[8] <= 5 %}
+                                    <span class="stock stock-bajo">⚠️ Stock: {{ p[8] }}</span>
+                                {% else %}
+                                    <span class="stock stock-ok">✅ Stock: {{ p[8] }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
                     <h4 class="nombre-producto">{{ p[1] }}</h4>
-                    <p class="precio-producto">${{ "%.2f"|format(p[2]) }}</p>
+                    <p class="precio-producto">${{ "%.2f"|format(p[3]) }}</p>
                 </div>
             </div>
             {% endfor %}
@@ -141,6 +161,7 @@
 {% block scripts %}
     <!-- Módulos específicos del sistema POS - orden de carga importante -->
     <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
     <script src="{{ url_for('static', filename='js/carrito.js') }}"></script>
     <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
     <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
@@ -308,6 +329,148 @@
                     searchTimeout = setTimeout(aplicarFiltros, 500); // Esperar 500ms después de dejar de escribir
                 });
             }
+            
+            // Verificar stock al cargar la página (solo para administradores)
+            {% if session.rol == 'administrador' %}
+            verificarStockBajo();
+            
+            // Hacer la función disponible globalmente
+            window.verificarStockBajo = verificarStockBajo;
+            {% endif %}
         });
+        
+        // Función para verificar stock bajo
+        async function verificarStockBajo() {
+            try {
+                const response = await fetch('/stock_info');
+                const data = await response.json();
+                
+                if (data.stock_bajo > 0 || data.agotados > 0) {
+                    // Verificar si ya se mostró la alerta en esta sesión
+                    const alertaYaMostrada = sessionStorage.getItem('stock_alert_shown');
+                    
+                    if (!alertaYaMostrada) {
+                        // Primera vez: mostrar alerta completa
+                        mostrarAlertaStockCompleta(data);
+                        // Marcar que ya se mostró
+                        sessionStorage.setItem('stock_alert_shown', 'true');
+                    }
+                    
+                    // Siempre mostrar indicador sutil en el carrito
+                    mostrarIndicadorStockCarrito(data);
+                }
+            } catch (error) {
+                console.error('Error al verificar stock:', error);
+            }
+        }
+        
+        // Función para mostrar alerta completa (primera vez)
+        function mostrarAlertaStockCompleta(data) {
+            let mensaje = '⚠️ <strong>Alerta de inventario:</strong><br>';
+            
+            if (data.agotados > 0) {
+                mensaje += `🚫 <strong>${data.agotados} productos agotados</strong><br>`;
+            }
+            
+            if (data.stock_bajo > 0) {
+                mensaje += `📉 <strong>${data.stock_bajo} productos con stock bajo</strong><br>`;
+            }
+            
+            mensaje += '<br><small>Productos afectados:</small><br>';
+            data.productos_stock_bajo.forEach(p => {
+                if (p.stock === 0) {
+                    mensaje += `• ${p.nombre}: <span style="color: #dc3545; font-weight: bold;">AGOTADO</span><br>`;
+                } else {
+                    mensaje += `• ${p.nombre}: <span style="color: #ffc107; font-weight: bold;">${p.stock} unidades</span><br>`;
+                }
+            });
+            
+            // Mostrar alerta después de un pequeño delay
+            setTimeout(() => {
+                if (window.mostrarConfirmacion) {
+                    window.mostrarConfirmacion('advertencia',
+                        'Control de Inventario',
+                        mensaje,
+                        { soloOk: true, textoOk: 'Entendido' }
+                    );
+                } else if (window.toastManager) {
+                    window.toastManager.mostrar('⚠️ Hay productos con stock crítico', 'warning', 8000);
+                }
+            }, 2000);
+        }
+        
+        // Función para mostrar indicador sutil en el carrito
+        function mostrarIndicadorStockCarrito(data) {
+            const cartSidebar = document.getElementById('cartSidebar');
+            if (!cartSidebar) return;
+            
+            // Eliminar indicador previo si existe
+            const indicadorPrevio = cartSidebar.querySelector('.stock-indicator');
+            if (indicadorPrevio) {
+                indicadorPrevio.remove();
+            }
+            
+            // Crear nuevo indicador
+            const indicador = document.createElement('div');
+            indicador.className = 'stock-indicator';
+            indicador.style.cssText = `
+                background: linear-gradient(45deg, #ffc107, #fd7e14);
+                color: #000;
+                padding: 8px 12px;
+                margin: 10px 0;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid rgba(255,193,7,0.3);
+            `;
+            
+            // Contenido del indicador
+            let contenido = `📦 Stock: `;
+            if (data.agotados > 0) {
+                contenido += `${data.agotados} agotados`;
+            }
+            if (data.stock_bajo > 0) {
+                if (data.agotados > 0) contenido += ', ';
+                contenido += `${data.stock_bajo} bajos`;
+            }
+            contenido += ` <small style="opacity: 0.7;">(clic para detalles)</small>`;
+            
+            indicador.innerHTML = contenido;
+            
+            // Hacer clic para ver detalles
+            indicador.addEventListener('click', () => {
+                mostrarAlertaStockCompleta(data);
+            });
+            
+            // Hover effect
+            indicador.addEventListener('mouseenter', () => {
+                indicador.style.transform = 'scale(1.05)';
+                indicador.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            });
+            
+            indicador.addEventListener('mouseleave', () => {
+                indicador.style.transform = 'scale(1)';
+                indicador.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            });
+            
+            // Insertar después del título del carrito
+            const carritoTitulo = cartSidebar.querySelector('h3');
+            if (carritoTitulo) {
+                carritoTitulo.insertAdjacentElement('afterend', indicador);
+            }
+        }
+        
+        // Función para resetear alerta de stock (útil para testing)
+        function resetearAlertaStock() {
+            sessionStorage.removeItem('stock_alert_shown');
+            console.log('Alerta de stock reseteada. Se mostrará en la próxima verificación.');
+        }
+        
+        // Hacer funciones disponibles en consola para debugging
+        window.resetearAlertaStock = resetearAlertaStock;
     </script>
 {% endblock %}

@@ -1,0 +1,542 @@
+/* =====================================
+   CONTABILIDAD.CSS - VERSIÓN CORREGIDA
+   Sistema de estilos para la página de contabilidad
+   ===================================== */
+
+/* Variables CSS */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --border-radius: 0.5rem;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    --transition: all 0.3s ease;
+}
+
+/* Contenedor principal */
+.contabilidad-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* Header con gradiente */
+.header-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.header-gradient .card-body {
+    padding: 2.5rem !important;
+}
+
+.header-gradient h2 {
+    font-weight: 600 !important;
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    color: white !important;
+}
+
+.header-gradient p {
+    font-size: 1.1rem !important;
+    opacity: 0.9 !important;
+    color: white !important;
+}
+
+/* Tarjetas de filtros */
+.filters-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
+}
+
+.filters-card .card-header {
+    background: var(--light-color);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1.25rem 1.5rem;
+}
+
+.filters-card .card-body {
+    padding: 2rem;
+}
+
+/* Tarjetas de estadísticas */
+.stats-card {
+    border: none;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.stats-card .card-body {
+    padding: 1.5rem;
+}
+
+.stats-card.primary {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.1) 0%, rgba(13, 110, 253, 0.05) 100%);
+    border-left: 4px solid var(--primary-color);
+}
+
+.stats-card.success {
+    background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(25, 135, 84, 0.05) 100%);
+    border-left: 4px solid var(--success-color);
+}
+
+.stats-card.info {
+    background: linear-gradient(135deg, rgba(13, 202, 240, 0.1) 0%, rgba(13, 202, 240, 0.05) 100%);
+    border-left: 4px solid var(--info-color);
+}
+
+.stats-card.warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+    border-left: 4px solid var(--warning-color);
+}
+
+.stats-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.stats-card .card-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--dark-color);
+}
+
+.stats-card .card-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary-color);
+}
+
+/* Botones de herramientas */
+.btn-tool {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.5rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition) !important;
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin: 0.25rem;
+}
+
+.btn-tool:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+    color: white !important;
+}
+
+.btn-tool.btn-margen {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+}
+
+.btn-tool.btn-proyeccion {
+    background: linear-gradient(135deg, #667eea 0%, #64b3f4 100%) !important;
+}
+
+.btn-tool.btn-rentabilidad {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+    color: #333 !important;
+}
+
+.btn-tool.btn-rentabilidad:hover {
+    color: #333 !important;
+}
+
+/* Contenedores de gráficas */
+.chart-container {
+    background: white !important;
+    border-radius: var(--border-radius) !important;
+    box-shadow: var(--shadow-sm) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chart-container canvas {
+    max-height: 350px !important;
+    width: 100% !important;
+    border-radius: 8px;
+}
+
+.chart-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 2px solid var(--light-color) !important;
+}
+
+.chart-title {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    color: var(--dark-color) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin: 0 !important;
+}
+
+.chart-controls {
+    display: flex !important;
+    gap: 0.5rem !important;
+}
+
+.chart-toggle-btn {
+    background: var(--light-color) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: var(--dark-color) !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.8rem !important;
+}
+
+.chart-toggle-btn:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-1px);
+    border-color: var(--primary-color) !important;
+}
+
+/* Efectos de hover */
+.hover-lift {
+    transition: var(--transition);
+}
+
+.hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Botones mejorados */
+.btn-enhanced {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    transition: var(--transition);
+    border: none;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-enhanced:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary-enhanced {
+    background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+    color: white;
+}
+
+.btn-success-enhanced {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    color: white;
+}
+
+/* Tablas mejoradas */
+.table {
+    margin: 0;
+}
+
+.table th {
+    border-top: none;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem 1.5rem;
+    background: var(--light-color);
+}
+
+.table td {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transition: var(--transition);
+}
+
+.fw-medium {
+    font-weight: 500;
+}
+
+.fw-semibold {
+    font-weight: 600;
+}
+
+/* Modales mejorados */
+.modal-enhanced .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modal-enhanced .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+}
+
+.modal-enhanced .modal-title {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+.modal-enhanced .btn-close {
+    background: white;
+    border-radius: 50%;
+    opacity: 0.8;
+    width: 30px;
+    height: 30px;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 2rem;
+}
+
+/* Formularios */
+.form-label {
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
+    transition: var(--transition);
+    font-size: 0.95rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Estados de carga */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toasts personalizados */
+.toast-container {
+    z-index: 9999;
+}
+
+.toast {
+    border: none;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .contabilidad-container {
+        padding: 1rem;
+    }
+    
+    .header-gradient .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .header-gradient h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .stats-card .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .btn-tool {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem;
+        margin: 0.25rem 0;
+        width: 100%;
+    }
+    
+    .chart-container {
+        padding: 1rem !important;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+    
+    .chart-controls {
+        align-self: stretch;
+        justify-content: center !important;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .filters-card .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .contabilidad-container {
+        padding: 0.5rem;
+    }
+    
+    .header-gradient h2 {
+        font-size: 1.25rem !important;
+    }
+    
+    .header-gradient p {
+        font-size: 0.9rem !important;
+    }
+    
+    .stats-card .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .chart-container canvas {
+        max-height: 250px !important;
+    }
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Utilidades adicionales */
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+/* Asegurar compatibilidad con el sistema existente */
+.contabilidad-container .card {
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.contabilidad-container .btn {
+    font-family: inherit;
+}
+
+/* Estados especiales */
+.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
