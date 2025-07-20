@@ -1,3 +1,13 @@
+/* Miniatura para productos en el carrito */
+.miniatura-carrito {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    margin-right: 10px;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(44,62,80,0.10);
+    vertical-align: middle;
+}
 /* --- Barra lateral derecha mejorada (igual que la izquierda) --- */
 .sidebar {
     position: fixed;

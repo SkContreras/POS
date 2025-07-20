@@ -41,6 +41,8 @@ class DatabaseManager:
     def init_db(self):
         """Inicializa la base de datos con todas las tablas"""
         conn = self.get_connection()
+        if conn is None:
+            raise RuntimeError("No se pudo obtener una conexión a la base de datos.")
         c = conn.cursor()
         
         # Tabla de productos
@@ -105,7 +107,8 @@ class DatabaseManager:
             c.execute("ALTER TABLE productos ADD COLUMN precio_compra REAL DEFAULT 0")
             # Actualizar productos existentes - por defecto el precio de compra será 70% del precio de venta
             c.execute("UPDATE productos SET precio_compra = precio * 0.7 WHERE precio_compra IS NULL OR precio_compra = 0")
-            conn.commit()
+            if conn:
+                conn.commit()
             print("✅ Migración aplicada: Columna precio_compra agregada a la tabla productos")
 
         # Migración: Renombrar columna precio a precio_venta para mayor claridad
@@ -1326,54 +1329,48 @@ class Gasto:
         }
 
 class LogAccion:
-    """Modelo para el registro de acciones del sistema"""
-    
     def __init__(self, db_manager):
         self.db = db_manager
-    
+
     def registrar(self, usuario_id, accion, detalles=None):
         """Registra una acción en el log"""
         try:
             conn = self.db.get_connection()
             c = conn.cursor()
-            
             c.execute("""
                 INSERT INTO log_acciones (usuario_id, accion, detalles)
                 VALUES (?, ?, ?)
             """, (usuario_id, accion, detalles))
-            
             conn.commit()
             log_id = c.lastrowid
             conn.close()
-            
             return log_id, None
-            
         except Exception as e:
             return None, str(e)
-    
-    def get_all(self, limit=100):
-        """Obtiene los últimos logs de acciones"""
+
+    def get_filtered(self, usuario=None, fecha_desde=None, fecha_hasta=None, limit=100):
+        """Obtiene los logs filtrados por usuario y rango de fechas"""
         conn = self.db.get_connection()
         c = conn.cursor()
-        
-        c.execute("""
-            SELECT la.id, u.nombre, la.accion, la.detalles, la.fecha
+        query = '''
+            SELECT la.id, u.nombre_completo, la.accion, la.detalles, la.fecha, u.usuario, u.rol
             FROM log_acciones la
             LEFT JOIN usuarios u ON la.usuario_id = u.id
-            ORDER BY la.fecha DESC
-            LIMIT ?
-        """, (limit,))
-        
+            WHERE 1=1
+        '''
+        params = []
+        if usuario:
+            query += ' AND u.id = ?'
+            params.append(usuario)
+        if fecha_desde:
+            query += ' AND la.fecha >= ?'
+            params.append(fecha_desde + ' 00:00:00')
+        if fecha_hasta:
+            query += ' AND la.fecha <= ?'
+            params.append(fecha_hasta + ' 23:59:59')
+        query += ' ORDER BY la.fecha DESC LIMIT ?'
+        params.append(limit)
+        c.execute(query, tuple(params))
         logs = c.fetchall()
         conn.close()
-        
-        return [
-            {
-                'id': log[0],
-                'usuario': log[1] or 'Sistema',
-                'accion': log[2],
-                'detalles': log[3],
-                'fecha': log[4]
-            }
-            for log in logs
-        ]
+        return logs

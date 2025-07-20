@@ -56,7 +56,8 @@ def init_productos_routes(app, db_manager):
             
             # Log de la acción
             current_user = get_current_user()
-            log_model.registrar(current_user['id'], f"Producto agregado: {nombre}", 
+            user_id = current_user['id'] if current_user and 'id' in current_user else None
+            log_model.registrar(user_id, f"Producto agregado: {nombre}", 
                               f"ID: {producto_id}, Precio compra: ${precio_compra:.2f}, Precio venta: ${precio_venta:.2f}, Margen: {margen:.1f}%, Stock inicial: {stock}")
             
             flash(f'Producto "{nombre}" agregado exitosamente. Margen de ganancia: {margen:.1f}%', 'success')
@@ -77,7 +78,7 @@ def init_productos_routes(app, db_manager):
         if request.method == "POST":
             nombre = request.form.get("nombre")
             precio_compra = float(request.form.get("precio_compra", 0))
-            precio_venta = float(request.form.get("precio_venta"))
+            precio_venta = float(request.form.get("precio_venta", 0))
             categoria = request.form.get("categoria", "Platillos de cocina")
             stock = request.form.get("stock", "0")
             
@@ -121,7 +122,8 @@ def init_productos_routes(app, db_manager):
             
             # Log de la acción
             current_user = get_current_user()
-            log_model.registrar(current_user['id'], f"Producto editado: {nombre}", 
+            user_id = current_user['id'] if current_user and 'id' in current_user else None
+            log_model.registrar(user_id, f"Producto editado: {nombre}", 
                               f"ID: {producto_id}, Precio compra: ${precio_compra:.2f}, Precio venta: ${precio_venta:.2f}, Margen: {margen:.1f}%, Stock: {stock}")
             
             flash(f"Producto actualizado con éxito. Margen de ganancia: {margen:.1f}%", 'success')
@@ -167,7 +169,8 @@ def init_productos_routes(app, db_manager):
                 
                 # Log de la acción
                 current_user = get_current_user()
-                log_model.registrar(current_user['id'], f"Producto eliminado: {producto[1]}", f"ID: {producto_id}")
+                user_id = current_user['id'] if current_user and 'id' in current_user else None
+                log_model.registrar(user_id, f"Producto eliminado: {producto[1]}", f"ID: {producto_id}")
                 
                 flash(f'Producto "{producto[1]}" eliminado exitosamente', 'success')
             else:

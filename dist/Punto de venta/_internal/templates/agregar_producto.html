@@ -11,9 +11,33 @@
             <input type="text" id="nombre" name="nombre" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="precio">Precio:</label>
-            <input type="number" id="precio" name="precio" step="0.01" class="form-control" required>
-       <div class="form-group">
+            <label for="precio_compra">Precio de Compra:</label>
+            <input type="number" id="precio_compra" name="precio_compra" step="0.01" min="0" class="form-control" required onchange="calcularMargen()">
+            <small class="help-text">Precio al que compras el producto</small>
+        </div>
+        <div class="form-group">
+            <label for="precio_venta">Precio de Venta:</label>
+            <input type="number" id="precio_venta" name="precio_venta" step="0.01" min="0" class="form-control" required onchange="calcularMargen()">
+            <small class="help-text">Precio al que vendes el producto al cliente</small>
+        </div>
+        <div class="form-group">
+            <div id="margen-info" style="padding: 10px; background-color: #f0f8ff; border-radius: 5px; display: none;">
+                <strong>Margen de ganancia: <span id="margen-porcentaje">0%</span></strong>
+                <br><small>Ganancia por unidad: $<span id="ganancia-unidad">0.00</span></small>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="categoria">Categoría:</label>
+            <select id="categoria" name="categoria" class="form-control" required onchange="updateStockField()">
+                <option value="Platillos de cocina">🍽️ Platillos de cocina</option>
+                <option value="Pescadería">🐟 Pescadería</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="stock">Stock inicial:</label>
+            <input type="number" id="stock" name="stock" min="0" class="form-control" value="999">
+            <small class="help-text">Para pescadería se recomienda stock bajo (5-20), para platillos de cocina stock alto (999)</small>
+        </div>
             <label for="fileInput">Imagen del producto:</label>
             <div id="drop-area" onclick="document.getElementById('fileInput').click();">
                 <p>Haz clic aquí o arrastra una imagen</p>
@@ -35,11 +59,11 @@
     <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
     <h3>Gestión</h3>
     <nav>
-        <a href="{{ url_for('index') }}">💰 Vender</a>
-        <a href="{{ url_for('agregar_producto') }}" class="active">➕ Agregar</a>
-        <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-        <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-        <a href="{{ url_for('historial') }}">📋 Historial</a>
+        <a href="{{ url_for('main.index') }}">💰 Vender</a>
+        <a href="{{ url_for('productos.agregar_producto') }}" class="active">➕ Agregar</a>
+        <a href="{{ url_for('productos.editar_lista') }}">✏️ Editar</a>
+        <a href="{{ url_for('productos.eliminar_producto') }}">🗑️ Eliminar</a>
+        <a href="{{ url_for('main.historial') }}">📋 Historial</a>
     </nav>
 </div>
 <button id="showMenuBtn" class="show-menu-btn" onclick="toggleMenu()" style="display:none;">☰</button>
@@ -83,5 +107,48 @@
         preview.src = URL.createObjectURL(event.target.files[0]);
         preview.style.display = "block";
     }
+    
+    function updateStockField() {
+        const categoria = document.getElementById("categoria").value;
+        const stockField = document.getElementById("stock");
+        
+        if (categoria === "Pescadería") {
+            stockField.value = "10";
+            stockField.style.backgroundColor = "#ffe6e6"; // Fondo rojo claro para indicar stock crítico
+        } else {
+            stockField.value = "999";
+            stockField.style.backgroundColor = "#e6ffe6"; // Fondo verde claro para stock alto
+        }
+    }
+    
+    function calcularMargen() {
+        const precioCompra = parseFloat(document.getElementById('precio_compra').value) || 0;
+        const precioVenta = parseFloat(document.getElementById('precio_venta').value) || 0;
+        
+        if (precioCompra > 0 && precioVenta > 0) {
+            if (precioVenta <= precioCompra) {
+                document.getElementById('margen-info').style.backgroundColor = '#ffe6e6';
+                document.getElementById('margen-porcentaje').textContent = 'PÉRDIDA';
+                document.getElementById('ganancia-unidad').textContent = (precioVenta - precioCompra).toFixed(2);
+                document.getElementById('margen-info').style.display = 'block';
+            } else {
+                const margen = ((precioVenta - precioCompra) / precioCompra) * 100;
+                const ganancia = precioVenta - precioCompra;
+                
+                document.getElementById('margen-info').style.backgroundColor = margen >= 30 ? '#e6ffe6' : (margen >= 15 ? '#fff3e0' : '#ffe6e6');
+                document.getElementById('margen-porcentaje').textContent = margen.toFixed(1) + '%';
+                document.getElementById('ganancia-unidad').textContent = ganancia.toFixed(2);
+                document.getElementById('margen-info').style.display = 'block';
+            }
+        } else {
+            document.getElementById('margen-info').style.display = 'none';
+        }
+    }
+    
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStockField();
+        calcularMargen();
+    });
 </script>
 {% endblock %}

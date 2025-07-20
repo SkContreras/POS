@@ -8,11 +8,22 @@ block_cipher = None
 # Añadir carpetas estáticas y templates
 datas = [
     ('static', 'static'),
+    ('static/css', 'static/css'),
+    ('static/js', 'static/js'),
+    ('static/img', 'static/img'),
     ('templates', 'templates'),
+    ('templates/gastos', 'templates/gastos'),
+    ('app', 'app'),
+    ('app/models', 'app/models'),
+    ('app/routes', 'app/routes'),
+    ('app/utils', 'app/utils'),
+    ('certificates', 'certificates'),
+    ('config', 'config'),
+    ('imgexample', 'imgexample'),
 ]
 
 a = Analysis(
-    ['app.py'],
+    ['app_modular.py'],
     pathex=[],
     binaries=[],
     datas=datas,

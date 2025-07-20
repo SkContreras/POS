@@ -101,20 +101,36 @@
     .search-bar {
         top: 8px;
         right: 8px;
-        width: calc(100vw - 16px);
+        width: calc(25vw - 16px); /* Reducido de 100vw a 70vw para que no ocupe todo el ancho */
         padding: 0 10px;
         border-radius: 10px;
         height: 40px;
     }
-    body.sidebar-closed .search-bar,
+    body.right-collapsed .search-bar,
     body.both-collapsed .search-bar {
         right: 8px;
-        width: calc(100vw - 16px);
+        width: calc(40vw - 16px); /* Reducido de 100vw a 70vw */
     }
 }
 
 /* --- MEJORAS PARA CELULARES --- */
 @media (max-width: 600px) {
+    /* Barra de búsqueda más compacta en celulares */
+    .search-bar {
+        width: calc(60vw - 16px) !important; /* Aún más compacta en celulares */
+        right: 12px !important;
+        top: 12px !important;
+        padding: 0 8px !important; /* Reducir padding interno */
+        gap: 8px !important; /* Reducir espacio entre elementos */
+        height: 45px !important; /* Aumentar ligeramente la altura */
+    }
+    
+    body.right-collapsed .search-bar,
+    body.both-collapsed .search-bar {
+        width: calc(60vw - 16px) !important;
+        right: 12px !important;
+    }
+
     body {
         font-size: 20px; /* más grande */
     }
@@ -169,14 +185,26 @@
 
     .search-bar input[type="text"],
     .search-bar input[type="search"] {
-        font-size: 1.25em;
-        padding: 14px 16px;
+        font-size: 1em !important; /* Reducir tamaño de fuente */
+        padding: 8px 10px !important; /* Reducir padding */
+        min-width: 120px !important; /* Reducir ancho mínimo */
     }
 
     .search-bar button,
     .search-bar .search-btn {
-        font-size: 1.25em;
-        padding: 14px 16px;
+        font-size: 0.9em !important; /* Reducir tamaño de fuente */
+        padding: 8px 12px !important; /* Reducir padding */
+    }
+
+    /* Iconos y elementos adicionales más pequeños */
+    .search-icon {
+        font-size: 1rem !important;
+    }
+
+    .clear-search-btn {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 1rem !important;
     }
 
     form.form, form {

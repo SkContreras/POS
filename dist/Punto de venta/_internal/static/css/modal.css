@@ -17,82 +17,237 @@
 }
 #confirmCantidadBtn:hover { background: #217dbb; }
 
-/* Estilos para el toast */
+/* Estilos mejorados para el toast */
 #toast {
     visibility: hidden;
-    min-width: 250px;
-    background-color: #4CAF50; /* verde agradable */
+    min-width: 320px;
+    max-width: 500px;
+    background: linear-gradient(135deg, #28a745, #20c997);
     color: white;
     text-align: center;
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: 16px;
+    padding: 20px 24px;
     position: fixed;
-    z-index: 1000;
+    z-index: 10000;
     left: 50%;
-    bottom: 30px;
-    transform: translateX(-50%);
-    font-size: 1.2rem;
-    box-shadow: 0 0 15px #4CAF50;
+    bottom: 20px;
+    transform: translateX(-50%) translateY(100px);
+    font-size: 1.1rem;
+    font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
     opacity: 0;
-    transition: opacity 0.5s ease, bottom 0.5s ease;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
-/* Mostrar el toast */
+/* Efecto de brillo sutil en el fondo */
+#toast::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+#toast.show::before {
+    left: 100%;
+}
+
+/* Mostrar el toast con animación mejorada */
 #toast.show {
     visibility: visible;
     opacity: 1;
-    bottom: 50px;
+    transform: translateX(-50%) translateY(0);
+    animation: toast-celebration 0.6s ease-out, toast-glow 2s ease-in-out infinite 0.6s;
 }
 
-/* Animación de celebración (brillo) */
-@keyframes shine {
+/* Animación de celebración más sutil */
+@keyframes toast-celebration {
     0% {
-        box-shadow: 0 0 10px #4CAF50, 0 0 20px #4CAF50, 0 0 30px #4CAF50;
+        transform: translateX(-50%) translateY(100px) scale(0.8);
+        opacity: 0;
     }
     50% {
-        box-shadow: 0 0 20px #81C784, 0 0 30px #81C784, 0 0 40px #81C784;
+        transform: translateX(-50%) translateY(-10px) scale(1.05);
     }
     100% {
-        box-shadow: 0 0 10px #4CAF50, 0 0 20px #4CAF50, 0 0 30px #4CAF50;
+        transform: translateX(-50%) translateY(0) scale(1);
+        opacity: 1;
     }
 }
 
-/* Aplica la animación de brillo al toast */
-#toast.show {
-    animation: shine 1.5s ease-in-out infinite;
+/* Animación de brillo suave continuo */
+@keyframes toast-glow {
+    0%, 100% {
+        box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+    }
+    50% {
+        box-shadow: 0 20px 40px rgba(40, 167, 69, 0.6), 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
 }
 
-/* Estilos base ya los tienes: #toast, #toast.show, etc. */
-
+/* Estilos específicos por tipo de toast */
 #toast.success {
-    background-color: #28a745; /* verde éxito */
-    animation: shine-success 1s ease-in-out infinite alternate;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+    border-left: 4px solid #20c997;
 }
 
 #toast.error {
-    background-color: #dc3545; /* rojo error */
-    animation: shine-error 1s ease-in-out infinite alternate;
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    box-shadow: 0 15px 35px rgba(220, 53, 69, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+    border-left: 4px solid #e74c3c;
 }
 
 #toast.warning {
-    background-color: #ffc107; /* amarillo advertencia */
-    color: black;
-    animation: shine-warning 1s ease-in-out infinite alternate;
+    background: linear-gradient(135deg, #ffc107, #f39c12);
+    color: #2c3e50;
+    font-weight: 600;
+    box-shadow: 0 15px 35px rgba(255, 193, 7, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+    border-left: 4px solid #f39c12;
 }
 
-/* Brillos animados por tipo */
-@keyframes shine-success {
-    from { box-shadow: 0 0 12px #28a745, 0 0 18px #28a745; }
-    to   { box-shadow: 0 0 18px #6fdc92, 0 0 26px #6fdc92; }
+#toast.info {
+    background: linear-gradient(135deg, #007bff, #3498db);
+    box-shadow: 0 15px 35px rgba(0, 123, 255, 0.4), 0 5px 15px rgba(0, 0, 0, 0.12);
+    border-left: 4px solid #3498db;
 }
 
-@keyframes shine-error {
-    from { box-shadow: 0 0 12px #dc3545, 0 0 18px #dc3545; }
-    to   { box-shadow: 0 0 18px #ff6b81, 0 0 26px #ff6b81; }
+/* Efectos de hover para interactividad */
+#toast:hover {
+    transform: translateX(-50%) translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(40, 167, 69, 0.5), 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-@keyframes shine-warning {
-    from { box-shadow: 0 0 12px #ffc107, 0 0 18px #ffc107; }
-    to   { box-shadow: 0 0 18px #ffe066, 0 0 26px #ffe066; }
+/* Animación de salida */
+#toast.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(100px) scale(0.9);
+    transition: all 0.3s ease-in;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    #toast {
+        min-width: 280px;
+        max-width: calc(100vw - 40px);
+        font-size: 1rem;
+        padding: 16px 20px;
+        border-radius: 12px;
+    }
+}
+
+/* Estilos adicionales para modales de confirmación */
+.modal-overlay {
+    backdrop-filter: blur(3px) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+}
+
+.modal-confirmacion {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    border: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-confirmacion::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #28a745, #ffc107, #dc3545);
+    background-size: 300% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+.modal-confirmacion.eliminar::before {
+    background: linear-gradient(90deg, #dc3545, #c82333);
+}
+
+.modal-confirmacion.editar::before {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.modal-confirmacion.venta::before {
+    background: linear-gradient(90deg, #007bff, #28a745);
+    background-size: 300% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+.modal-confirmacion.exito::before {
+    background: linear-gradient(90deg, #28a745, #20c997, #28a745);
+}
+
+.modal-confirmacion.error::before {
+    background: linear-gradient(90deg, #dc3545, #c82333, #dc3545);
+}
+
+.modal-confirmacion.advertencia::before {
+    background: linear-gradient(90deg, #ffc107, #fd7e14, #ffc107);
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Mejoras para botones de modal */
+.modal-confirmacion button {
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-confirmacion button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.modal-confirmacion button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Responsive para modales */
+@media (max-width: 768px) {
+    .modal-confirmacion {
+        margin: 20px;
+        padding: 20px !important;
+        max-width: none !important;
+        width: calc(100% - 40px) !important;
+    }
+    
+    .modal-confirmacion h3 {
+        font-size: 1.2rem !important;
+    }
+    
+    .modal-confirmacion p {
+        font-size: 0.9rem !important;
+    }
+    
+    .modal-confirmacion button {
+        padding: 10px 20px !important;
+        font-size: 0.9rem !important;
+        min-width: 80px !important;
+    }
 }
 

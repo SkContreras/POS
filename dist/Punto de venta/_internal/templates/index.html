@@ -1,77 +1,146 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Punto de Venta</title>
-    <link rel="stylesheet" href="static/css/styles.css">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.jpeg') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
-</head>
-<body>
-    <!-- Barra decorativa superior -->
-    <div class="decor-bar"></div>
-    
-    <!-- Sidebar izquierda para gestión -->
-    <div class="sidebar left" id="gestionSidebar">
-        <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
-        <h3>Gestión</h3>
-        <nav>
-            <a href="{{ url_for('index') }}">💰 Vender</a>
-            <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
-            <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-            <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
-            <a href="#" onclick="shutdownServer()" style="cursor:pointer;">🚪 Cerrar tienda</a>
-        </nav>
-        <div id="qr-container" style="margin-top: 20px; text-align: center;">
-            <h4 style="font-size: 14px;">Escanéame 📱</h4>
-            <img src="{{ url_for('qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
-            <p style="font-size: 12px; margin-top: 10px; color: #555;">
-                Abre la cámara de tu celular, apunta al código QR y toca la notificación para abrir esta app desde tu teléfono.<br>
-                Asegúrate de que tu celular esté conectado a la misma red WiFi que este servidor.
-            </p>
-        </div>
-    </div>
-    <!-- Botón flotante para mostrar la barra de gestión cuando está colapsada -->
-    <button id="showMenuBtn" class="toggle-gestion-fixed" onclick="toggleGestion()">☰</button>
+{% extends "base.html" %}
 
-    {% block content %}
-    <!-- Menú de productos -->
-    <div class="container">
-        <div class="menu" id="menuProductos">
-            {% for p in productos %}
-            <div class="producto"
-                 data-id="{{ p[0] }}"
-                 data-nombre="{{ p[1] }}"
-                 data-precio="{{ p[2] }}">
-                <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="{{ p[1] }}">
-                <p class="nombre-producto">{{ p[1] }} - ${{ "%.2f"|format(p[2]) }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endblock %}
+{% block title %}Punto de Venta{% endblock %}
+
+{% block content %}
+    <!-- Modificar la sidebar existente para incluir QR y cerrar tienda -->
+    <script>
+        // Agregar contenido adicional a la sidebar del base template
+        document.addEventListener('DOMContentLoaded', function() {
+            const nav = document.querySelector('#gestionSidebar nav');
+            if (nav) {
+                {% if session.rol == 'administrador' %}
+                // Agregar opción de cerrar tienda (solo para administradores)
+                const cerrarLink = document.createElement('a');
+                cerrarLink.href = '#';
+                cerrarLink.onclick = shutdownServer;
+                cerrarLink.style.cursor = 'pointer';
+                cerrarLink.innerHTML = '🚪 Cerrar tienda';
+                nav.appendChild(cerrarLink);
+                {% endif %}
+                
+                // Agregar contenedor QR
+                const qrContainer = document.createElement('div');
+                qrContainer.id = 'qr-container';
+                qrContainer.style.cssText = 'margin-top: 20px; text-align: center;';
+                qrContainer.innerHTML = `
+                    <h4 style="font-size: 14px;">Escanéame 📱</h4>
+                    <img src="{{ url_for('main.qr_code') }}" alt="QR Code" style="width: 120px; height: 120px; margin-top: 8px;">
+                    <p style="font-size: 11px; margin-top: 10px; color: #555; line-height: 1.3;">
+                        📸 <strong>Usa la cámara de tu teléfono</strong><br>
+                        📡 <strong>Conecta tu teléfono a la misma WiFi</strong><br>
+                        🔗 Si el QR no funciona, abre el navegador y ve a:<br>
+                        <code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-size: 10px;">{{ request.host }}</code><br>
+                        <a href="/qr_debug" style="font-size: 10px; color: #007bff;" target="_blank">🔧 Info técnica</a>
+                    </p>
+                `;
+                nav.parentElement.appendChild(qrContainer);
+            }
+        });
+    </script>
 
     <!-- Contenedor para barra de búsqueda y carrito -->
     <div class="search-cart-wrapper">
         <!-- Barra de búsqueda de productos -->
         <form class="search-bar">
           <span class="search-icon">&#128269;</span>
-          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar">
+          <input type="text" id="busqueda" placeholder="Buscar producto" name="buscar" autocomplete="off" value="{{ busqueda_actual }}">
+          <button type="button" id="clearSearch" class="clear-search-btn" title="Limpiar búsqueda">×</button>
         </form>
+        
         <!-- Sidebar derecha: Carrito de compras -->
         <div class="sidebar" id="cartSidebar">
-            <button class="toggle-cart" onclick="toggleCart()">🛒</button>
+            <button class="toggle-cart" onclick="toggleCarrito()">🛒</button>
             <h3>Carrito</h3>
             <ul id="carrito"></ul>
-            <p>Total: $<span id="total">0</span></p>
+            <p>Total: $<span id="total">0.00</span></p>
             <button class="cart-btn" onclick="finalizarVenta()">Finalizar Venta</button>
             <hr>
-            <a href="{{ url_for('historial') }}">Ver Historial</a>
+            <a href="{{ url_for('main.historial') }}">📋 Ver Historial</a>
+            {% if session.rol == 'administrador' %}
+            <a href="{{ url_for('main.contabilidad') }}" style="margin-top: 10px; display: block; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; text-align: center; font-weight: bold; transition: all 0.3s ease;">📊 Contabilidad</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Barra de filtros y ordenamiento -->
+    <div class="filtros-container">
+        <div class="filtros-wrapper">
+            <div class="filtro-grupo">
+                <label for="orderSelect">📊 Ordenar por:</label>
+                <select id="orderSelect" class="filtro-select">
+                    <option value="recientes" {% if order_by == 'recientes' %}selected{% endif %}>📅 Más recientes</option>
+                    <option value="antiguos" {% if order_by == 'antiguos' %}selected{% endif %}>🕰️ Más antiguos</option>
+                    <option value="alfabetico" {% if order_by == 'alfabetico' %}selected{% endif %}>🔤 Alfabético (A-Z)</option>
+                    <option value="precio_asc" {% if order_by == 'precio_asc' %}selected{% endif %}>💰 Precio (menor a mayor)</option>
+                    <option value="precio_desc" {% if order_by == 'precio_desc' %}selected{% endif %}>💎 Precio (mayor a menor)</option>
+                    <option value="mas_vendido" {% if order_by == 'mas_vendido' %}selected{% endif %}>🔥 Más vendidos</option>
+                    <option value="menos_vendido" {% if order_by == 'menos_vendido' %}selected{% endif %}>❄️ Menos vendidos</option>
+                </select>
+            </div>
+            
+            <div class="filtro-grupo">
+                <label for="categorySelect">🏷️ Categoría:</label>
+                <select id="categorySelect" class="filtro-select">
+                    <option value="todas" {% if categoria_actual == 'todas' %}selected{% endif %}>🌟 Todas las categorías</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat }}" {% if categoria_actual == cat %}selected{% endif %}>
+                            {% if cat == 'Pescadería' %}🐟{% else %}🍽️{% endif %} {{ cat }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="button" id="resetFilters" class="reset-btn" title="Restablecer filtros">🔄 Reset</button>
         </div>
     </div>
 
     <!-- Botón flotante para mostrar el carrito cuando está colapsado -->
-    <button id="showCartBtn" class="show-cart-btn" onclick="toggleCart()" style="display:none;">🛒</button>
+    <button id="showCartBtn" class="show-cart-btn" onclick="toggleCarrito()" style="display:none;">🛒</button>
+
+    <!-- Menú de productos -->
+    <div class="container">
+        <div class="menu" id="menuProductos">
+            {% for p in productos %}
+            <div class="producto{% if p|length > 8 and p[8] <= 5 and (p|length > 5 and p[5] == 'Pescadería') %} stock-bajo{% elif p|length > 8 and p[8] == 0 %} sin-stock{% endif %}"
+                 data-id="{{ p[0] }}"
+                 data-nombre="{{ p[1] }}"
+                 data-precio="{{ p[3] }}"
+                 data-categoria="{{ p[5] if p|length > 5 else 'Platillos de cocina' }}"
+                 data-stock="{{ p[8] if p|length > 8 else 999 }}"
+                 data-imagen="{{ p[4] }}">
+                <img src="{{ url_for('static', filename='img/' ~ p[4]) }}" alt="{{ p[1] }}">
+                <div class="producto-info">
+                    <div class="categoria-badge">
+                        {% if p|length > 5 and p[5] == 'Pescadería' %}
+                            <span class="categoria pescaderia">🐟 Pescadería</span>
+                        {% else %}
+                            <span class="categoria cocina">🍽️ Cocina</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Indicador de stock -->
+                    {% if p|length > 8 %}
+                        <div class="stock-info">
+                            {% if p[5] == 'Pescadería' %}
+                                {% if p[8] == 0 %}
+                                    <span class="stock sin-stock">🚫 Agotado</span>
+                                {% elif p[8] <= 5 %}
+                                    <span class="stock stock-bajo">⚠️ Stock: {{ p[8] }}</span>
+                                {% else %}
+                                    <span class="stock stock-ok">✅ Stock: {{ p[8] }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    
+                    <h4 class="nombre-producto">{{ p[1] }}</h4>
+                    <p class="precio-producto">${{ "%.2f"|format(p[3]) }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 
     <!-- Título fijo de la aplicación -->
     <div id="tituloMegaMas">Mega-Mas</div>
@@ -85,127 +154,42 @@
         <button id="confirmCantidadBtn">Añadir al carrito</button>
       </div>
     </div>
+    
+    <!-- Contenedor para notificaciones toast -->
+    <div id="toast"></div>
+{% endblock %}
 
-    {% block scripts %}
+{% block scripts %}
+    <!-- Módulos específicos del sistema POS - orden de carga importante -->
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/carrito.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/productos.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/celebracion.js') }}"></script>
+    <!-- Archivo principal que inicializa todo -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <!-- ...otros scripts específicos de esta página... -->
-    {% endblock %}
-
+    
     <script>
-        // Centra el header y gestiona clases del body según el estado de los sidebars
-        function updateHeaderCentering() {
-            const menu = document.getElementById('gestionSidebar');
-            const cart = document.getElementById('cartSidebar');
-            const topBar = document.getElementById('topBar');
-            if (!topBar) return;
-            if (!menu.classList.contains('collapsed') || !cart.classList.contains('collapsed')) {
-                topBar.classList.add('centered-header');
-            } else {
-                topBar.classList.remove('centered-header');
+        // Inicializar sidebars cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el manager de sidebars si está disponible
+            if (window.sidebarManager) {
+                window.sidebarManager.inicializarSidebars();
             }
-            // Añade clase al body si ambos sidebars están colapsados
-            if (menu.classList.contains('collapsed') && cart.classList.contains('collapsed')) {
-                document.body.classList.add('both-collapsed');
-            } else {
-                document.body.classList.remove('both-collapsed');
-            }
-        }
-
-        // Colapsa o expande el menú lateral izquierdo (solo en pantallas pequeñas)
-        function toggleMenu() {
-            if (window.innerWidth > 900) return;
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            menu.classList.toggle('collapsed');
-            showBtn.style.display = menu.classList.contains('collapsed') ? 'flex' : 'none';
-            updateHeaderCentering();
-        }
-
-        // Colapsa o expande el carrito (sidebar derecho)
-        function toggleCart() {
-            const cart = document.getElementById('cartSidebar');
-            const showCartBtn = document.getElementById('showCartBtn');
-            cart.classList.toggle('collapsed');
-            if (cart.classList.contains('collapsed')) {
-                showCartBtn.style.display = 'flex';
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open');
-            } else {
-                showCartBtn.style.display = 'none';
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed');
-            }
-            updateHeaderCentering();
-        }
-
-        // Colapsa o expande la barra de gestión (sidebar izquierdo)
-        function toggleGestion() {
-            const gestion = document.getElementById('gestionSidebar');
-            gestion.classList.toggle('collapsed');
-            // Añade o quita la clase al body para animar el título
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
-            }
-        }
-
-        // Estado inicial de los sidebars y botones flotantes al cargar la página
-        window.addEventListener('DOMContentLoaded', function() {
-            const gestion = document.getElementById('gestionSidebar');
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
-            }
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            const cart = document.getElementById('cartSidebar');
-            if (!menu.classList.contains('collapsed')) {
-                showBtn.style.display = 'none';
-            }
-            document.getElementById('showCartBtn').style.display = 'none';
-            if (cart.classList.contains('collapsed')) {
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open');
-            } else {
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed');
-            }
-            updateHeaderCentering();
+            
+            // El carrito ahora inicia abierto junto con el sidebar de gestión
+            // Esto se maneja desde sidebarManager.inicializarSidebars()
+            
+            // Asegurar que la función toggleCarrito esté disponible globalmente
+            window.toggleCarrito = function() {
+                if (window.sidebarManager) {
+                    window.sidebarManager.toggleCarrito();
+                }
+            };
         });
-
-        // Ajusta el menú lateral izquierdo al cambiar el tamaño de la ventana
-        window.addEventListener('resize', function() {
-            const menu = document.getElementById('gestionSidebar');
-            const showBtn = document.getElementById('showMenuBtn');
-            if (window.innerWidth > 900) {
-                menu.classList.remove('collapsed');
-                showBtn.style.display = 'none';
-            }
-        });
-
-        // Filtra productos en tiempo real según la búsqueda
-        document.addEventListener("DOMContentLoaded", function () {
-            const input = document.getElementById("busqueda");
-            const productos = document.querySelectorAll(".producto");
-
-            input.addEventListener("keyup", function () {
-                const filtro = input.value.toLowerCase();
-
-                productos.forEach(function (producto) {
-                    const nombre = producto.dataset.nombre.toLowerCase();
-                    if (nombre.includes(filtro)) {
-                        producto.classList.remove("oculto");
-                    } else {
-                        producto.classList.add("oculto");
-                    }
-                });
-            });
-        });
-
-
-        // Animación de rebote al hacer clic en un producto
+    
+        // Agregar animaciones de rebote a los productos
         document.querySelectorAll('.producto').forEach(producto => {
             producto.addEventListener('click', function() {
                 this.classList.remove('bounce'); // Reinicia si ya tiene la clase
@@ -215,21 +199,279 @@
         });
 
         // Función para cerrar el servidor
-        function shutdownServer() {
-            fetch('/shutdown', {
-            method: 'POST'
-            })
-            .then(response => response.text())
-            .then(data => {
-            alert(data);  // Mostrar mensaje de que se cerró
-            window.close(); // Intentar cerrar la pestaña (puede fallar en algunos navegadores)
-            })
-            .catch(error => {
-            alert('Error al cerrar el servidor');
-            console.error(error);
-            });
+        async function shutdownServer() {
+            let confirmar = false;
+            
+            // Verificar si es administrador
+            {% if session.rol != 'administrador' %}
+            if (window.toastManager) {
+                window.toastManager.mostrar('Solo administradores pueden cerrar la tienda', 'error');
+            } else {
+                alert('Solo administradores pueden cerrar la tienda');
+            }
+            return;
+            {% endif %}
+            
+            if (window.confirmacionManager) {
+                confirmar = await window.confirmacionManager.crearModal('advertencia',
+                    'Cerrar tienda y sesión',
+                    '¿Estás seguro de que quieres cerrar la tienda?<br><small>Esto cerrará tu sesión y finalizará la aplicación completamente.</small>',
+                    {
+                        textoConfirmar: 'Sí, cerrar tienda',
+                        textoCancelar: 'Cancelar'
+                    }
+                );
+            } else {
+                confirmar = confirm('¿Estás seguro de que quieres cerrar la tienda? Esto cerrará tu sesión.');
+            }
+            
+            if (!confirmar) return;
+            
+            // Verificar contraseña del administrador
+            try {
+                await window.verificarAdmin('Confirma tu contraseña para cerrar la tienda:');
+            } catch (error) {
+                return; // Usuario canceló o error en verificación
+            }
+            
+            try {
+                const response = await fetch('/shutdown', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (window.confirmacionManager) {
+                        await window.confirmacionManager.mostrarExito(
+                            'Tienda y sesión cerradas correctamente.<br>Cerrando pestaña en 3 segundos...'
+                        );
+                    } else {
+                        alert('Tienda y sesión cerradas correctamente. Cerrando pestaña...');
+                    }
+                    
+                    // Intentar cerrar la pestaña después de un pequeño delay
+                    setTimeout(() => {
+                        if (window.tabCloser) {
+                            window.tabCloser.cerrarPestanaTienda(data.redirect);
+                        } else {
+                            // Fallback si no está disponible el módulo
+                            window.cerrarPestanaConFallback(data.redirect);
+                        }
+                    }, 1500);
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                
+            } catch (error) {
+                console.error('Error al cerrar el servidor:', error);
+                if (window.confirmacionManager) {
+                    await window.confirmacionManager.mostrarError(
+                        'Error al cerrar el servidor. Intenta nuevamente.'
+                    );
+                } else {
+                    alert('Error al cerrar el servidor');
+                }
+            }
         }
+        
+        // Sistema de filtros y ordenamiento
+        function aplicarFiltros() {
+            const orderBy = document.getElementById('orderSelect').value;
+            const categoria = document.getElementById('categorySelect').value;
+            const busqueda = document.getElementById('busqueda').value;
+            
+            // Construir URL con parámetros
+            const params = new URLSearchParams();
+            
+            if (orderBy && orderBy !== 'recientes') {
+                params.set('order_by', orderBy);
+            }
+            if (categoria && categoria !== 'todas') {
+                params.set('categoria', categoria);
+            }
+            if (busqueda && busqueda.trim() !== '') {
+                params.set('busqueda', busqueda.trim());
+            }
+            
+            // Redirigir con los filtros
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.location.href = newUrl;
+        }
+        
+        // Event listeners para los filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderSelect = document.getElementById('orderSelect');
+            const categorySelect = document.getElementById('categorySelect');
+            const resetBtn = document.getElementById('resetFilters');
+            const busquedaInput = document.getElementById('busqueda');
+            
+            // Aplicar filtros cuando cambian los selectores
+            if (orderSelect) {
+                orderSelect.addEventListener('change', aplicarFiltros);
+            }
+            
+            if (categorySelect) {
+                categorySelect.addEventListener('change', aplicarFiltros);
+            }
+            
+            // Botón de reset
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function() {
+                    window.location.href = window.location.pathname;
+                });
+            }
+            
+            // Búsqueda con debounce
+            let searchTimeout;
+            if (busquedaInput) {
+                busquedaInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(aplicarFiltros, 500); // Esperar 500ms después de dejar de escribir
+                });
+            }
+            
+            // Verificar stock al cargar la página (solo para administradores)
+            {% if session.rol == 'administrador' %}
+            verificarStockBajo();
+            
+            // Hacer la función disponible globalmente
+            window.verificarStockBajo = verificarStockBajo;
+            {% endif %}
+        });
+        
+        // Función para verificar stock bajo
+        async function verificarStockBajo() {
+            try {
+                const response = await fetch('/stock_info');
+                const data = await response.json();
+                
+                if (data.stock_bajo > 0 || data.agotados > 0) {
+                    // Verificar si ya se mostró la alerta en esta sesión
+                    const alertaYaMostrada = sessionStorage.getItem('stock_alert_shown');
+                    
+                    if (!alertaYaMostrada) {
+                        // Primera vez: mostrar alerta completa
+                        mostrarAlertaStockCompleta(data);
+                        // Marcar que ya se mostró
+                        sessionStorage.setItem('stock_alert_shown', 'true');
+                    }
+                    
+                    // Siempre mostrar indicador sutil en el carrito
+                    mostrarIndicadorStockCarrito(data);
+                }
+            } catch (error) {
+                console.error('Error al verificar stock:', error);
+            }
+        }
+        
+        // Función para mostrar alerta completa (primera vez)
+        function mostrarAlertaStockCompleta(data) {
+            let mensaje = '⚠️ <strong>Alerta de inventario:</strong><br>';
+            
+            if (data.agotados > 0) {
+                mensaje += `🚫 <strong>${data.agotados} productos agotados</strong><br>`;
+            }
+            
+            if (data.stock_bajo > 0) {
+                mensaje += `📉 <strong>${data.stock_bajo} productos con stock bajo</strong><br>`;
+            }
+            
+            mensaje += '<br><small>Productos afectados:</small><br>';
+            data.productos_stock_bajo.forEach(p => {
+                if (p.stock === 0) {
+                    mensaje += `• ${p.nombre}: <span style="color: #dc3545; font-weight: bold;">AGOTADO</span><br>`;
+                } else {
+                    mensaje += `• ${p.nombre}: <span style="color: #ffc107; font-weight: bold;">${p.stock} unidades</span><br>`;
+                }
+            });
+            
+            // Mostrar alerta después de un pequeño delay
+            setTimeout(() => {
+                if (window.mostrarConfirmacion) {
+                    window.mostrarConfirmacion('advertencia',
+                        'Control de Inventario',
+                        mensaje,
+                        { soloOk: true, textoOk: 'Entendido' }
+                    );
+                } else if (window.toastManager) {
+                    window.toastManager.mostrar('⚠️ Hay productos con stock crítico', 'warning', 8000);
+                }
+            }, 2000);
+        }
+        
+        // Función para mostrar indicador sutil en el carrito
+        function mostrarIndicadorStockCarrito(data) {
+            const cartSidebar = document.getElementById('cartSidebar');
+            if (!cartSidebar) return;
+            
+            // Eliminar indicador previo si existe
+            const indicadorPrevio = cartSidebar.querySelector('.stock-indicator');
+            if (indicadorPrevio) {
+                indicadorPrevio.remove();
+            }
+            
+            // Crear nuevo indicador
+            const indicador = document.createElement('div');
+            indicador.className = 'stock-indicator';
+            indicador.style.cssText = `
+                background: linear-gradient(45deg, #ffc107, #fd7e14);
+                color: #000;
+                padding: 8px 12px;
+                margin: 10px 0;
+                border-radius: 8px;
+                font-size: 12px;
+                font-weight: bold;
+                text-align: center;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 2px solid rgba(255,193,7,0.3);
+            `;
+            
+            // Contenido del indicador
+            let contenido = `📦 Stock: `;
+            if (data.agotados > 0) {
+                contenido += `${data.agotados} agotados`;
+            }
+            if (data.stock_bajo > 0) {
+                if (data.agotados > 0) contenido += ', ';
+                contenido += `${data.stock_bajo} bajos`;
+            }
+            contenido += ` <small style="opacity: 0.7;">(clic para detalles)</small>`;
+            
+            indicador.innerHTML = contenido;
+            
+            // Hacer clic para ver detalles
+            indicador.addEventListener('click', () => {
+                mostrarAlertaStockCompleta(data);
+            });
+            
+            // Hover effect
+            indicador.addEventListener('mouseenter', () => {
+                indicador.style.transform = 'scale(1.05)';
+                indicador.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            });
+            
+            indicador.addEventListener('mouseleave', () => {
+                indicador.style.transform = 'scale(1)';
+                indicador.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            });
+            
+            // Insertar después del título del carrito
+            const carritoTitulo = cartSidebar.querySelector('h3');
+            if (carritoTitulo) {
+                carritoTitulo.insertAdjacentElement('afterend', indicador);
+            }
+        }
+        
+        // Función para resetear alerta de stock (útil para testing)
+        function resetearAlertaStock() {
+            sessionStorage.removeItem('stock_alert_shown');
+            console.log('Alerta de stock reseteada. Se mostrará en la próxima verificación.');
+        }
+        
+        // Hacer funciones disponibles en consola para debugging
+        window.resetearAlertaStock = resetearAlertaStock;
     </script>
-    <div id="toast">¡Venta guardada con éxito! 🎉</div>
-</body>
-</html>
+{% endblock %}

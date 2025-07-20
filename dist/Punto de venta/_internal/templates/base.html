@@ -2,6 +2,10 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta tags para control de pestañas -->
+    <meta name="application-name" content="Mega-Mas POS">
+    <meta name="format-detection" content="telephone=no">
     <title>{% block title %}Punto de Venta{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.jpeg') }}">
@@ -11,43 +15,164 @@
 <body>
     <div class="decor-bar"></div>
     <!-- Sidebar izquierda para gestión -->
-    <div class="sidebar left collapsed" id="gestionSidebar">
+    <div class="sidebar left" id="gestionSidebar">
         <button class="toggle-gestion" onclick="toggleGestion()">☰</button>
         <h3>Gestión</h3>
+        
+        <!-- Información del usuario logueado -->
+        {% if session.usuario %}
+        <div class="user-info" style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 15px; font-size: 12px;">
+            <p style="margin: 0; color: #fff; font-weight: bold;">
+                {% if session.rol == 'administrador' %}👨‍💼{% else %}👨‍💻{% endif %} {{ session.nombre_completo }}
+            </p>
+            <p style="margin: 0; color: #ccc; font-size: 11px;">{{ session.rol|title }}</p>
+        </div>
+        {% endif %}
+        
         <nav>
-            <a href="{{ url_for('index') }}">💰 Vender</a>
-            <a href="{{ url_for('agregar_producto') }}">➕ Agregar</a>
-            <a href="{{ url_for('editar_lista') }}">✏️ Editar</a>
-            <a href="{{ url_for('eliminar_producto') }}">🗑️ Eliminar</a>
+            <a href="{{ url_for('main.index') }}" class="nav-link" data-page="index">💰 Vender</a>
+            {% if session.rol == 'administrador' %}
+            <a href="{{ url_for('productos.agregar_producto') }}" class="nav-link" data-page="agregar">➕ Agregar</a>
+            <a href="{{ url_for('productos.editar_lista') }}" class="nav-link" data-page="editar">✏️ Editar</a>
+            <a href="{{ url_for('productos.eliminar_producto') }}" class="nav-link" data-page="eliminar">🗑️ Eliminar</a>
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('main.contabilidad') }}" class="nav-link" data-page="contabilidad">📊 Contabilidad</a>
+            <a href="{{ url_for('main.historial') }}" class="nav-link" data-page="historial">📋 Historial</a>
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('gastos.lista_gastos') }}" class="nav-link" data-page="gastos">💸 Gastos</a>
+            <a href="{{ url_for('gastos.dashboard_gastos') }}" class="nav-link" data-page="gastos-dashboard">📈 Dashboard Gastos</a>
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('auth.gestionar_usuarios') }}" class="nav-link" data-page="usuarios">👥 Usuarios</a>
+            <a href="{{ url_for('auth.log_acciones') }}" class="nav-link" data-page="log">📊 Log</a>
+            {% endif %}
+            <hr style="margin: 10px 0; border: none; border-top: 1px solid rgba(255,255,255,0.2);">
+            <a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;" onclick="return confirmarCerrarSesion(event)">🚪 Cerrar Sesión</a>
         </nav>
     </div>
     <button class="toggle-gestion-fixed pulse" onclick="toggleGestion()">☰</button>
     {% block content %}{% endblock %}
+    
+    <!-- Scripts base del sistema POS - ORDEN CRÍTICO -->
+    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/confirmacion.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tab_closer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/security.js') }}"></script>
+    {% if session.rol == 'administrador' %}
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    
     <script>
-        function toggleGestion() {
-            const gestion = document.getElementById('gestionSidebar');
-            gestion.classList.toggle('collapsed');
-            if (gestion.classList.contains('collapsed')) {
-                document.body.classList.add('left-collapsed');
-            } else {
-                document.body.classList.remove('left-collapsed');
+        // Inicializar sidebars cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el manager de sidebars si está disponible
+            if (window.sidebarManager) {
+                window.sidebarManager.inicializarSidebars();
             }
-
-            // --- NUEVO: Actualiza las clases de body para las columnas ---
-            const cart = document.getElementById('cartSidebar');
-            const leftClosed = gestion.classList.contains('collapsed');
-            const rightClosed = cart && cart.classList.contains('collapsed');
-            if (leftClosed && rightClosed) {
-                document.body.classList.add('both-collapsed');
-                document.body.classList.remove('sidebar-open', 'sidebar-closed');
-            } else if (leftClosed || rightClosed) {
-                document.body.classList.add('sidebar-closed');
-                document.body.classList.remove('sidebar-open', 'both-collapsed');
-            } else {
-                document.body.classList.add('sidebar-open');
-                document.body.classList.remove('sidebar-closed', 'both-collapsed');
+            
+            // Marcar el botón activo según la página actual
+            marcarBotonActivo();
+        });
+        
+        // Función para detectar y marcar el botón activo
+        function marcarBotonActivo() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.sidebar.left .nav-link');
+            
+            // Remover clase active de todos los enlaces
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Determinar qué página está activa basándose en la URL
+            let activePage = '';
+            
+            if (currentPath === '/' || currentPath === '/index') {
+                activePage = 'index';
+            } else if (currentPath.includes('/agregar_producto')) {
+                activePage = 'agregar';
+            } else if (currentPath.includes('/editar_lista') || currentPath.includes('/editar_producto')) {
+                activePage = 'editar';
+            } else if (currentPath.includes('/eliminar_producto')) {
+                activePage = 'eliminar';
+            } else if (currentPath.includes('/gestionar_usuarios')) {
+                activePage = 'usuarios';
+            } else if (currentPath.includes('/log_acciones')) {
+                activePage = 'log';
+            }
+            
+            // Marcar el enlace correspondiente como activo
+            if (activePage) {
+                const activeLink = document.querySelector(`.sidebar.left .nav-link[data-page="${activePage}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
             }
         }
+        
+        // Función de compatibilidad para el botón del base template
+        function toggleGestion() {
+            if (window.sidebarManager) {
+                window.sidebarManager.toggleGestion();
+            } else {
+                // Fallback para compatibilidad
+                const gestion = document.getElementById('gestionSidebar');
+                const toggleBtn = document.querySelector('.toggle-gestion-fixed');
+                if (gestion) {
+                    gestion.classList.toggle('collapsed');
+                    if (gestion.classList.contains('collapsed')) {
+                        document.body.classList.add('left-collapsed');
+                        if (toggleBtn) toggleBtn.style.display = 'block';
+                    } else {
+                        document.body.classList.remove('left-collapsed');
+                        if (toggleBtn) toggleBtn.style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        // Asegurar que la función esté disponible globalmente
+        window.toggleGestion = toggleGestion;
+        
+        // Función para confirmar cerrar sesión con modal estilizado
+        async function confirmarCerrarSesion(event) {
+            event.preventDefault();
+            
+            let confirmar = false;
+            
+            if (window.confirmacionManager) {
+                confirmar = await window.confirmacionManager.crearModal('advertencia',
+                    '🚪 Cerrar Sesión',
+                    '¿Está seguro de que desea cerrar su sesión actual?<br><small>Tendrá que iniciar sesión nuevamente para acceder al sistema.</small>',
+                    {
+                        textoConfirmar: '✅ Sí, cerrar sesión',
+                        textoCancelar: '❌ Cancelar'
+                    }
+                );
+            } else {
+                // Fallback para navegadores sin soporte
+                confirmar = confirm('¿Cerrar sesión?');
+            }
+            
+            if (confirmar) {
+                // Intentar cerrar la pestaña si es posible
+                if (window.tabCloser) {
+                    // Usar el módulo de cierre de pestañas
+                    setTimeout(() => {
+                        window.tabCloser.cerrarPestanaLogout(event.target.href);
+                    }, 500);
+                } else {
+                    // Fallback tradicional
+                    setTimeout(() => {
+                        window.location.href = event.target.href;
+                    }, 500);
+                }
+            }
+            
+            return false;
+        }
+        
+        // Hacer la función disponible globalmente
+        window.confirmarCerrarSesion = confirmarCerrarSesion;
     </script>
     {% block scripts %}{% endblock %}
 </body>

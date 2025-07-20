@@ -5,29 +5,50 @@ let carrito = [];
 window.carrito = carrito;
 
 function agregarAlCarrito(id, nombre, precio) {
+    // Obtener la imagen del producto desde el atributo data-imagen
+    const productoDiv = document.querySelector(`.producto[data-id='${id}']`);
+    let imagen = 'default.png';
+    console.log('[carrito] ProductoDiv:', productoDiv);
+    if (productoDiv && productoDiv.dataset.imagen) {
+        const imgVal = productoDiv.dataset.imagen.trim();
+        console.log(`[carrito] data-imagen para id=${id}:`, imgVal);
+        if (imgVal && imgVal.toLowerCase() !== 'none' && imgVal.toLowerCase() !== 'null') {
+            imagen = imgVal;
+            console.log(`[carrito] Imagen válida encontrada para id=${id}:`, imagen);
+        } else {
+            console.log(`[carrito] Imagen inválida para id=${id}, usando default.png`);
+        }
+    } else {
+        console.log(`[carrito] No se encontró data-imagen para id=${id}, usando default.png`);
+    }
+    console.log(`[carrito] Imagen final para id=${id}:`, imagen);
     // Verificar que el modal manager esté disponible antes de usarlo
     if (window.modalManager && window.modalManager.mostrarModalCantidad) {
-        window.modalManager.mostrarModalCantidad(id, nombre, precio);
+        window.modalManager.mostrarModalCantidad(id, nombre, precio, imagen);
     } else {
         // Fallback: usar prompt si el modal no está disponible
         const cantidad = prompt(`¿Cuánto "${nombre}" quieres añadir al carrito?`, "1");
         if (cantidad && !isNaN(cantidad) && parseFloat(cantidad) > 0) {
-            confirmarAgregarAlCarrito(id, nombre, precio, parseFloat(cantidad));
+            confirmarAgregarAlCarrito(id, nombre, precio, parseFloat(cantidad), imagen);
         }
     }
 }
 
-function confirmarAgregarAlCarrito(id, nombre, precio, cantidad) {
+function confirmarAgregarAlCarrito(id, nombre, precio, cantidad, imagen) {
     if (isNaN(cantidad) || cantidad <= 0) return;
-    
+
+    console.log(`[carrito] confirmarAgregarAlCarrito: id=${id}, nombre=${nombre}, precio=${precio}, cantidad=${cantidad}, imagen=${imagen}`);
     // Buscar si el producto ya existe en el carrito
     const idx = carrito.findIndex(p => p.id === id);
     if (idx !== -1) {
         carrito[idx].cantidad += cantidad;
+        console.log(`[carrito] Producto ya en carrito, nueva cantidad:`, carrito[idx]);
     } else {
-        carrito.push({ id, nombre, precio: parseFloat(precio), cantidad });
+        const obj = { id, nombre, precio: parseFloat(precio), cantidad, imagen };
+        carrito.push(obj);
+        console.log(`[carrito] Producto agregado al carrito:`, obj);
     }
-    
+
     actualizarCarrito();
 }
 
@@ -49,19 +70,33 @@ function actualizarCarrito() {
         const subtotal = p.precio * p.cantidad;
         total += subtotal;
         const li = document.createElement("li");
-        
+
+        // Miniatura del producto
+        const img = document.createElement("img");
+        const rutaImg = `/static/img/${p.imagen || 'default.png'}`;
+        img.src = rutaImg;
+        img.alt = p.nombre;
+        img.className = "miniatura-carrito";
+        img.style.width = "32px";
+        img.style.height = "32px";
+        img.style.borderRadius = "6px";
+        img.style.marginRight = "10px";
+        img.style.objectFit = "cover";
+        console.log(`[carrito] img.src para id=${p.id}:`, rutaImg);
+
         // Crear contenedor para el texto del producto
         const textoProducto = document.createElement("span");
         textoProducto.className = "producto-texto";
         textoProducto.textContent = `${p.nombre} x${p.cantidad} - $${subtotal.toFixed(2)}`;
-        
+
         // Botón eliminar
         const btn = document.createElement("button");
         btn.innerHTML = "🗑️";
         btn.className = "carrito-eliminar-btn";
         btn.title = "Eliminar del carrito";
         btn.onclick = () => eliminarDelCarrito(idx);
-        
+
+        li.appendChild(img);
         li.appendChild(textoProducto);
         li.appendChild(btn);
         lista.appendChild(li);

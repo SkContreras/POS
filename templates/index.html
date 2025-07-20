@@ -107,7 +107,8 @@
                  data-nombre="{{ p[1] }}"
                  data-precio="{{ p[3] }}"
                  data-categoria="{{ p[5] if p|length > 5 else 'Platillos de cocina' }}"
-                 data-stock="{{ p[8] if p|length > 8 else 999 }}">
+                 data-stock="{{ p[8] if p|length > 8 else 999 }}"
+                 data-imagen="{{ p[4] }}">
                 <img src="{{ url_for('static', filename='img/' ~ p[4]) }}" alt="{{ p[1] }}">
                 <div class="producto-info">
                     <div class="categoria-badge">

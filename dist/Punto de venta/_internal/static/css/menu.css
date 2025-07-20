@@ -15,7 +15,7 @@
     background-color: #ffffff;
     border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 24px 20px;
+    padding: 16px 14px 18px 14px; /* Ajustar padding para dar espacio ordenado */
     text-align: center;
     border-radius: 16px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -27,8 +27,8 @@
     align-items: center;
     animation: fadeInUp 0.6s cubic-bezier(0.4,0,0.2,1);
     animation-fill-mode: both;
-    position: relative; /* Para pseudo-elementos */
-    overflow: hidden;
+    position: relative; /* Para pseudo-elementos y badges */
+    overflow: visible; /* Cambiar de hidden a visible para mostrar badges */
 }
 
 .producto::after {
@@ -47,7 +47,7 @@
     height: 200px;
     object-fit: cover;
     border-radius: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px; /* Reducir margen para dar espacio a la categoría */
     background-color: #f0f0f0;
 }
 
@@ -109,4 +109,93 @@
 .producto:hover .nombre-producto {
     color: #3498db;
     transition: color 0.3s;
+}
+
+/* Estilos para indicadores de stock */
+.stock-info {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.stock {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stock.sin-stock {
+    background-color: #dc3545;
+    color: white;
+    animation: pulso 2s infinite;
+}
+
+.stock.stock-bajo {
+    background-color: #ffc107;
+    color: #212529;
+    animation: parpadeo 3s infinite;
+}
+
+.stock.stock-ok {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Efectos visuales para productos con stock crítico */
+.producto.sin-stock {
+    opacity: 0.6;
+    filter: grayscale(0.7);
+    border: 2px solid #dc3545;
+}
+
+.producto.stock-bajo {
+    border: 2px solid #ffc107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+/* Animaciones para alertas de stock */
+@keyframes pulso {
+    0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% { 
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+@keyframes parpadeo {
+    0%, 90%, 100% { 
+        opacity: 1;
+    }
+    95% { 
+        opacity: 0.7;
+    }
+}
+
+/* Prevenir click en productos sin stock */
+.producto.sin-stock {
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.producto.sin-stock::before {
+    content: "🚫 AGOTADO";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(220, 53, 69, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 10;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
 }

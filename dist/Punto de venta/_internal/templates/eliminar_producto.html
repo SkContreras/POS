@@ -6,12 +6,17 @@
         {% if productos %}
             {% for p in productos %}
             <div class="producto">
-                <img src="{{ url_for('static', filename='img/' ~ p[3]) }}" alt="Imagen de {{ p[1] }}">
+                {% set imagen = p[4] if p|length > 4 else '' %}
+                {% if imagen %}
+                    <img src="{{ url_for('static', filename='img/' ~ imagen) }}" alt="Imagen de {{ p[1] }}">
+                {% else %}
+                    <img src="{{ url_for('static', filename='img/default.png') }}" alt="Sin imagen">
+                {% endif %}
                 <h4>{{ p[1] }}</h4>
-                <p>${{ "%.2f"|format(p[2]) }}</p>
-                <form method="post" action="{{ url_for('eliminar_producto') }}">
+                <p>${{ "%.2f"|format(p[3]) }}</p>
+                <form method="post" action="{{ url_for('productos.eliminar_producto') }}" onsubmit="return confirmarEliminacion(event, '{{ p[1] }}');">
                     <input type="hidden" name="producto_id" value="{{ p[0] }}">
-                    <button class="eliminar-btn" type="submit" onclick="return confirm('¿Seguro que deseas eliminar este producto?');">Eliminar</button>
+                    <button class="eliminar-btn" type="submit">Eliminar</button>
                 </form>
             </div>
             {% endfor %}
@@ -20,4 +25,33 @@
         {% endif %}
     </div>
     <div style="clear: both;"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function confirmarEliminacion(event, nombreProducto) {
+    event.preventDefault(); // Prevenir el envío automático del formulario
+    
+    let confirmar = false;
+    if (window.confirmacionManager) {
+        confirmar = await window.confirmacionManager.confirmarEliminar(nombreProducto);
+    } else {
+        // Fallback a confirm nativo si no está disponible
+        confirmar = confirm(`¿Seguro que deseas eliminar "${nombreProducto}"?`);
+    }
+    
+    if (!confirmar) return false;
+    
+    // Verificar contraseña del administrador antes de eliminar
+    try {
+        await window.verificarAdmin(`Confirma tu contraseña para eliminar "${nombreProducto}":`);
+        event.target.submit(); // Enviar el formulario si se confirma y verifica
+    } catch (error) {
+        // Usuario canceló o error en verificación
+        console.log('Eliminación cancelada');
+    }
+    
+    return false;
+}
+</script>
 {% endblock %}

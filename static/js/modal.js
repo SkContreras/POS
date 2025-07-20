@@ -8,8 +8,8 @@ function inicializarModal() {
         confirmBtn.onclick = function() {
             const cantidad = parseFloat(document.getElementById('cantidadInput').value);
             if (productoPendiente && cantidad > 0) {
-                const { id, nombre, precio } = productoPendiente;
-                window.carritoManager.confirmarAgregarAlCarrito(id, nombre, precio, cantidad);
+                const { id, nombre, precio, imagen } = productoPendiente;
+                window.carritoManager.confirmarAgregarAlCarrito(id, nombre, precio, cantidad, imagen);
                 cerrarModalCantidad();
             }
         };
@@ -39,8 +39,9 @@ function inicializarModal() {
     });
 }
 
-function mostrarModalCantidad(id, nombre, precio) {
-    productoPendiente = { id, nombre, precio };
+// Ahora recibe imagen como cuarto parámetro
+function mostrarModalCantidad(id, nombre, precio, imagen) {
+    productoPendiente = { id, nombre, precio, imagen };
     const modal = document.getElementById('cantidadModal');
     const title = document.getElementById('modalTitle');
     const input = document.getElementById('cantidadInput');

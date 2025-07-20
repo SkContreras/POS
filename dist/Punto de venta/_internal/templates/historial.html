@@ -9,6 +9,7 @@
                 <tr>
                     <th>#</th>
                     <th>Fecha</th>
+                    <th>Usuario</th>
                     <th>Total</th>
                     <th>Detalles</th>
                 </tr>
@@ -18,6 +19,11 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ venta.fecha }}</td>
+                    <td style="font-size: 12px;">
+                        {% if venta.rol == 'administrador' %}👨‍💼{% else %}👨‍💻{% endif %} 
+                        {{ venta.nombre_completo }}<br>
+                        <small style="color: #666;">{{ venta.usuario }}</small>
+                    </td>
                     <td><span class="monto">${{ "%.2f"|format(venta.total) }}</span></td>
                     <td>
                         <table class="detalle-table">

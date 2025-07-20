@@ -4,7 +4,7 @@ Rutas de autenticación para el sistema POS
 """
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from werkzeug.security import check_password_hash, generate_password_hash
-from app.models.database import Usuario, LogAccion
+from app.models.database import LogAccion, Usuario  # Asegúrate de que 'Usuario' esté definido en database.py
 from app.utils.auth import login_required, admin_required, create_session, clear_session, get_current_user
 from datetime import datetime
 import sqlite3
@@ -97,19 +97,20 @@ def init_auth_routes(app, db_manager):
             usuario_model.create(usuario, password_hash, rol, nombre_completo)
             
             current_user = get_current_user()
-            log_model.registrar(current_user['id'], f"Usuario creado: {usuario} ({rol})")
+            if current_user:
+                log_model.registrar(current_user['id'], f"Usuario creado: {usuario} ({rol})")
             flash(f'Usuario "{nombre_completo}" creado exitosamente', 'success')
         except sqlite3.IntegrityError:
             flash('El nombre de usuario ya existe', 'error')
         
         return redirect(url_for('auth.gestionar_usuarios'))
-    
+
     @auth_bp.route("/cambiar_estado_usuario/<int:user_id>")
     @admin_required
     def cambiar_estado_usuario(user_id):
         """Activar/desactivar usuario"""
         current_user = get_current_user()
-        if user_id == current_user['id']:
+        if current_user and user_id == current_user['id']:
             flash('No puedes desactivar tu propia cuenta', 'error')
             return redirect(url_for('auth.gestionar_usuarios'))
         
@@ -120,7 +121,8 @@ def init_auth_routes(app, db_manager):
             usuario_model.update_status(user_id, nuevo_estado)
             
             estado_texto = "activado" if nuevo_estado else "desactivado"
-            log_model.registrar(current_user['id'], f"Usuario {estado_texto}: {user_data[1]}")
+            if current_user:
+                log_model.registrar(current_user['id'], f"Usuario {estado_texto}: {user_data[1]}")
             flash(f'Usuario {user_data[1]} {estado_texto}', 'success')
         
         return redirect(url_for('auth.gestionar_usuarios'))
@@ -136,18 +138,23 @@ def init_auth_routes(app, db_manager):
         
         # Obtener logs filtrados
         logs = log_model.get_filtered(usuario_filtro, fecha_desde, fecha_hasta)
+        # Si la plantilla espera diccionarios, convertir los logs
+        # Si la plantilla usa índices, dejar como está
+        # Aquí se asume que la plantilla usa índices, así que no se transforma
         
         # Obtener lista de usuarios para el filtro
         usuarios_list = usuario_model.get_all()
         
         # Obtener estadísticas
-        stats = log_model.get_stats()
-        
+        # Si no existe get_stats, calcular usuarios_activos y ventas_hoy de forma básica
+        usuarios_activos = len([u for u in usuarios_list if u[4] == 1]) if usuarios_list else 0
+        ventas_hoy = len([l for l in logs if 'Venta' in l[2] and l[4][:10] == datetime.now().strftime('%Y-%m-%d')]) if logs else 0
+
         return render_template('log_acciones.html', 
                              logs=logs, 
                              usuarios_list=usuarios_list,
-                             usuarios_activos=stats['usuarios_activos'],
-                             ventas_hoy=stats['ventas_hoy'])
+                             usuarios_activos=usuarios_activos,
+                             ventas_hoy=ventas_hoy)
     
     @auth_bp.route("/cambiar_credenciales", methods=['POST'])
     @admin_required
@@ -155,8 +162,8 @@ def init_auth_routes(app, db_manager):
         """Cambiar credenciales del administrador actual"""
         current_user = get_current_user()
         
-        # Verificar que es administrador
-        if current_user['rol'] != 'administrador':
+        # Verificar que es administrador y que current_user no es None
+        if not current_user or current_user.get('rol') != 'administrador':
             flash('Solo los administradores pueden cambiar sus credenciales', 'error')
             return redirect(url_for('auth.gestionar_usuarios'))
         
@@ -212,11 +219,13 @@ def init_auth_routes(app, db_manager):
             # Registrar en log
             cambios = []
             if new_username:
-                cambios.append(f"usuario: {current_user['usuario']} → {new_username}")
+                old_usuario = current_user['usuario'] if current_user and 'usuario' in current_user else ''
+                cambios.append(f"usuario: {old_usuario} → {new_username}")
             if new_password_hash:
                 cambios.append("contraseña actualizada")
             
-            log_model.registrar(current_user['id'], f"Credenciales actualizadas: {', '.join(cambios)}")
+            if current_user:
+                log_model.registrar(current_user['id'], f"Credenciales actualizadas: {', '.join(cambios)}")
             
             flash('Credenciales actualizadas exitosamente', 'success')
             
