@@ -42,6 +42,7 @@ def login_required(f):
 def admin_required(f):
     """Decorador que requiere permisos de administrador"""
     @wraps(f)
+    @login_required
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('auth.login'))
